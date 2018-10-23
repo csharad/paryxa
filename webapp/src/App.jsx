@@ -54,20 +54,18 @@ class App extends Component {
                     </Toolbar>
                 </AppBar>
 
-                {/* <Switch> */}
-                    <Route path="/" component={Home}></Route>
-                    <Route path="/login" component={Login}></Route>
-                    <Route path="/signup" component={SignUp}></Route>
-                    <Route path="/verify-your-account" component={VerifyAccount}></Route>
-                    <Route path="/getting-started" component={GettingStarted}></Route>
-                    <Route path="/profile" component={Profile}></Route>
-                    <Route path="/solved-questions" component={SolvedQuestions}></Route>
-                    <Route path="/test-paper" component={TestPaper}></Route>
-                    <Route path="/test-paper/notice" component={InfoBeforeTest}></Route>
-                    <Route path="/test-paper/completed" component={TestComplete}></Route>
-                    <Route path="/dashboard" component={Dashboard}></Route>
-                    <Route path="/settings" component={Settings}></Route>
-                {/* </Switch> */}
+                <Route path="/" component={Home}></Route>
+                <Route path="/login" component={Login}></Route>
+                <Route path="/signup" component={SignUp}></Route>
+                <Route path="/verify-your-account" component={VerifyAccount}></Route>
+                <Route path="/getting-started" component={GettingStarted}></Route>
+                <Route path="/profile" component={Profile}></Route>
+                <Route path="/solved-questions" component={SolvedQuestions}></Route>
+                <Route path="/test-paper" exact component={TestPaper}></Route>
+                <Route path="/test-paper/notice" exact component={InfoBeforeTest}></Route>
+                <Route path="/test-paper/completed" exact component={TestComplete}></Route>
+                <Route path="/dashboard" component={Dashboard}></Route>
+                <Route path="/settings" component={Settings}></Route>
             </MuiThemeProvider>
         );
     }
