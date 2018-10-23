@@ -10,6 +10,7 @@ import {
     Avatar
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 const styles = theme => ({
     paper: {
@@ -71,6 +72,8 @@ class SignUp extends Component {
                             variant="contained"
                             className={classes.button}
                             fullWidth
+                            component={Link}
+                            to="/getting-started"
                         >
                             Next
                             <Icon>arrow_right</Icon>
