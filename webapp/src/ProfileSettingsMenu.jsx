@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Dialog, List, ListItem, ListItemText, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 const styles = theme => ({
     button: {
@@ -34,7 +35,7 @@ class ProfileSettingsMenu extends Component {
                 classes={{ root: classes.dialogRoot, paper: classes.paper }}
             >
                 <List>
-                    <ListItem button>
+                    <ListItem button component={Link} to="/settings">
                         <ListItemText className={classes.button}>Settings</ListItemText>
                     </ListItem>
                     <ListItem button>

@@ -13,6 +13,7 @@ import TestPaper from './TestPaper';
 import InfoBeforeTest from './InfoBeforeTest';
 import TestComplete from './TestComplete';
 import Dashboard from './Dashboard';
+import Settings from './Settings';
 
 const theme = createMuiTheme({
     palette: {
@@ -65,6 +66,7 @@ class App extends Component {
                     <Route path="/test-paper/notice" component={InfoBeforeTest}></Route>
                     <Route path="/test-paper/completed" component={TestComplete}></Route>
                     <Route path="/dashboard" component={Dashboard}></Route>
+                    <Route path="/settings" component={Settings}></Route>
                 {/* </Switch> */}
             </MuiThemeProvider>
         );
