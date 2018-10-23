@@ -11,8 +11,7 @@ import {
     InputBase,
     Select,
     Grid,
-    MenuItem,
-    Button,
+    MenuItem
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';

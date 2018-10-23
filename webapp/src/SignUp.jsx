@@ -6,8 +6,7 @@ import {
     Typography,
     Icon,
     Paper,
-    Grid,
-    Avatar
+    Grid
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';

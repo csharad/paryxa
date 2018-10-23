@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { AppBar, Toolbar, Typography, CssBaseline, Button, withStyles, createMuiTheme, MuiThemeProvider, colors } from '@material-ui/core';
-import { Route, Link, Switch } from 'react-router-dom';
+import { Route, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Home from './Home';
 import Login from './Login';
