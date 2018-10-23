@@ -1,0 +1,160 @@
+import React, { Component } from 'react';
+import { Avatar, colors, withStyles, Grid, Typography } from '@material-ui/core';
+import PropTypes from 'prop-types';
+import TestList from './TestList';
+
+const styles = theme => ({
+    userAvatar: {
+        backgroundColor: colors.red[500],
+        width: 96,
+        height: 96,
+    },
+    containerSpacing: {
+        marginTop: theme.spacing.unit * 2,
+    },
+    testBlock: {
+        width: '100%',
+        marginTop: theme.spacing.unit * 4
+    },
+    listRoot: {
+        backgroundColor: theme.palette.background.paper,
+        width: '100%',
+        marginTop: theme.spacing.unit * 2
+    },
+    testName: {
+        display: 'block'
+    }
+});
+
+class Profile extends Component {
+    static propTypes = {
+        classes: PropTypes.object.isRequired
+    };
+
+    render() {
+        const { classes } = this.props;
+
+        return (
+            <Grid
+                container
+                direction="column"
+                alignItems="center"
+                className={classes.containerSpacing}
+            >
+                <Grid
+                    item
+                    container
+                    md={6}
+                >
+                    <Grid
+                        item
+                        container
+                        alignItems="center"
+                        spacing={40}
+                    >
+                        <Grid item>
+                            <Avatar className={classes.userAvatar}>U</Avatar>
+                        </Grid>
+                        <Grid item>
+                            <Typography variant="h5">Your Name</Typography>
+
+                            <Grid container spacing={16}>
+                                <Grid item>
+                                    <Typography variant="subtitle1">0 Tests</Typography>
+                                </Grid>
+                                <Grid item>
+                                    <Typography variant="subtitle1">0 Rank</Typography>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+
+                    <div className={classes.testBlock}>
+                        <Typography variant="h6">Current Tests</Typography>
+
+                        <TestList newTest className={classes.listRoot} list={[
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test',
+                                liveTest: true,
+                            }
+                        ]}></TestList>
+                    </div>
+
+                    <div className={classes.testBlock}>
+                        <Typography variant="h6">Your Upcoming Tests</Typography>
+
+                        <TestList newTest className={classes.listRoot} list={[
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                        ]}></TestList>
+                    </div>
+
+
+                    <div className={classes.testBlock}>
+                        <Typography variant="h6">Completed Tests</Typography>
+
+                        <TestList className={classes.listRoot} list={[
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                        ]}></TestList>
+                    </div>
+
+
+                    <div className={classes.testBlock}>
+                        <Typography variant="h6">All Upcoming Tests</Typography>
+
+                        <TestList className={classes.listRoot} list={[
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                            {
+                                title: 'Name of the Test',
+                                time: 'Time of the Test'
+                            },
+                        ]}></TestList>
+                    </div>
+                </Grid>
+            </Grid>
+        );
+    }
+}
+
+export default withStyles(styles)(Profile);
