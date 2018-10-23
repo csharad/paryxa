@@ -15,21 +15,28 @@ use uuid::Uuid;
 
 #[derive(Identifiable, Queryable, Serialize)]
 pub struct User {
-    id: i32,
-    uuid: Uuid,
-    first_name: Option<String>,
-    last_name: Option<String>,
-    email: String,
+    pub id: i32,
+    pub uuid: Uuid,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub email: String,
     password: String,
-    gender: Option<Gender>,
-    contact: Option<String>,
+    pub gender: Option<Gender>,
+    pub contact: Option<String>,
     #[serde(rename = "type")]
-    type_: UserType,
+    pub type_: UserType,
 }
 
 impl User {
     pub fn find_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<User> {
         let user = users::table.filter(users::uuid.eq(uuid)).get_result(conn)?;
+        Ok(user)
+    }
+
+    pub fn find_by_email(email: &str, conn: &PgConnection) -> SResult<User> {
+        let user = users::table
+            .filter(users::email.eq(email))
+            .get_result(conn)?;
         Ok(user)
     }
 
@@ -245,5 +252,22 @@ impl UserTypeUpdate {
             ..UserPatch::default()
         };
         user_patch.save(uuid, conn)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct LoginUser {
+    email: String,
+    password: String,
+}
+
+impl LoginUser {
+    pub fn try_login(self, conn: &PgConnection) -> SResult<User> {
+        let user = User::find_by_email(&self.email, conn)?;
+        if bcrypt::verify(&self.password, &user.password)? {
+            Ok(user)
+        } else {
+            Err(Error::IncorrectPassword)
+        }
     }
 }

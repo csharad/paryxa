@@ -21,6 +21,10 @@ pub fn rest_resources(s: Scope<AppState>) -> Scope<AppState> {
                     .with_async(user_handler::update_user_type);
             })
         })
+    }).resource("/login", |r: &mut Resource<AppState>| {
+        r.post().with_async(user_handler::login);
+    }).resource("/logout", |r| {
+        r.post().f(user_handler::logout);
     })
 }
 

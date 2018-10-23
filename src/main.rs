@@ -3,7 +3,13 @@ extern crate env_logger;
 extern crate paryxa_server;
 
 use actix_web::{
-    dev::Resource, http::StatusCode, middleware::Logger, server, App, HttpRequest, HttpResponse,
+    dev::Resource,
+    http::StatusCode,
+    middleware::{
+        identity::{CookieIdentityPolicy, IdentityService},
+        Logger,
+    },
+    server, App, HttpRequest, HttpResponse,
 };
 use paryxa_server::{rest_resources, AppState};
 use std::env;
@@ -31,7 +37,10 @@ fn main() {
     server::new(|| {
         App::with_state(AppState::new())
             .middleware(logger())
-            .scope("/", rest_resources)
+            .middleware(IdentityService::new(
+                // Set a different private key
+                CookieIdentityPolicy::new(&[0; 32]).name("paryxahub"),
+            )).scope("/", rest_resources)
             .default_resource(|r: &mut Resource<AppState>| r.f(not_found))
     }).bind("127.0.0.1:4000")
     .unwrap()

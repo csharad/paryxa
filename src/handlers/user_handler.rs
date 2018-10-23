@@ -1,8 +1,10 @@
 use super::exec_db;
-use actix_web::{HttpRequest, Json, Path, Query};
+use actix_web::{
+    middleware::identity::RequestIdentity, HttpRequest, HttpResponse, Json, Path, Query,
+};
 use errors::Error;
 use futures::Future;
-use models::user::{User, UserForm, UserInfoUpdate, UserTypeUpdate};
+use models::user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate};
 use uuid::Uuid;
 use AppState;
 
@@ -78,4 +80,23 @@ pub fn update_user_type(
         let user = user.save(uuid, &conn)?;
         Ok(Json(user))
     })
+}
+
+pub fn login(
+    req: HttpRequest<AppState>,
+    user: Json<LoginUser>,
+) -> impl Future<Item = Json<User>, Error = Error> {
+    let user = user.into_inner();
+    exec_db(&req, move |conn| {
+        let user = user.try_login(&conn)?;
+        Ok(user)
+    }).and_then(move |user| {
+        req.remember(user.id.to_string());
+        Ok(Json(user))
+    })
+}
+
+pub fn logout(req: &HttpRequest<AppState>) -> HttpResponse {
+    req.forget();
+    HttpResponse::Ok().finish()
 }
