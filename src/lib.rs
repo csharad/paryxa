@@ -12,16 +12,14 @@ extern crate serde_derive;
 extern crate actix_web;
 extern crate bcrypt;
 extern crate dotenv;
-extern crate tokio_threadpool;
 extern crate futures;
+extern crate tokio_threadpool;
 
 use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
 use errors::SResult;
-use models::user::{User, UserForm};
-use serde::{de::DeserializeOwned, Serialize};
 use std::env;
 
 mod db_types;

@@ -3,8 +3,6 @@ extern crate env_logger;
 extern crate paryxa_server;
 
 use actix_web::{
-    dev::Resource,
-    http::StatusCode,
     middleware::{
         identity::{CookieIdentityPolicy, IdentityService},
         Logger,
@@ -23,7 +21,7 @@ fn logger() -> Logger {
 }
 
 fn not_found(_: &HttpRequest<AppState>) -> HttpResponse {
-    HttpResponse::build(StatusCode::NOT_FOUND)
+    HttpResponse::NotFound()
         .content_type("text/plain; charset=utf8")
         .body("Not Found")
 }
@@ -41,7 +39,7 @@ fn main() {
                 // Set a different private key
                 CookieIdentityPolicy::new(&[0; 32]).name("paryxahub"),
             )).scope("/", rest_resources)
-            .default_resource(|r: &mut Resource<AppState>| r.f(not_found))
+            .default_resource(|r| r.f(not_found))
     }).bind("127.0.0.1:4000")
     .unwrap()
     .run();

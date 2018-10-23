@@ -1,4 +1,4 @@
-use actix_web::{dev::Resource, http::Method, HttpRequest, Scope};
+use actix_web::{http::Method, HttpRequest, Scope};
 use errors::{Error, SResult};
 use futures::Future;
 use {AppState, PooledPg};
@@ -6,22 +6,22 @@ use {AppState, PooledPg};
 mod user_handler;
 
 pub fn rest_resources(s: Scope<AppState>) -> Scope<AppState> {
-    s.nested("/users", |s: Scope<AppState>| {
-        s.resource("", |r: &mut Resource<AppState>| {
+    s.nested("/users", |s| {
+        s.resource("", |r| {
             r.post().with_async(user_handler::create_user);
             r.get().with_async(user_handler::get_all_user);
-        }).nested("/{uuid}", |s: Scope<AppState>| {
-            s.resource("", |r: &mut Resource<AppState>| {
+        }).nested("/{uuid}", |s| {
+            s.resource("", |r| {
                 r.method(Method::PATCH)
                     .with_async(user_handler::update_user);
                 r.get().with_async(user_handler::get_user);
                 r.delete().with_async(user_handler::delete_user);
-            }).resource("/user-type", |r: &mut Resource<AppState>| {
+            }).resource("/user-type", |r| {
                 r.method(Method::PATCH)
                     .with_async(user_handler::update_user_type);
             })
         })
-    }).resource("/login", |r: &mut Resource<AppState>| {
+    }).resource("/login", |r| {
         r.post().with_async(user_handler::login);
     }).resource("/logout", |r| {
         r.post().f(user_handler::logout);

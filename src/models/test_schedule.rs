@@ -1,6 +1,5 @@
 use chrono::NaiveDateTime;
-use diesel::{data_types::PgInterval, prelude::*};
-use errors::SResult;
+use diesel::data_types::PgInterval;
 use schema::test_schedules;
 use uuid::Uuid;
 
