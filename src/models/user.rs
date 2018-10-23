@@ -15,11 +15,13 @@ use uuid::Uuid;
 
 #[derive(Identifiable, Queryable, Serialize)]
 pub struct User {
+    #[serde(skip)]
     pub id: i32,
     pub uuid: Uuid,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub email: String,
+    #[serde(skip)]
     password: String,
     pub gender: Option<Gender>,
     pub contact: Option<String>,
