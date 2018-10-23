@@ -7,7 +7,6 @@ pub struct TestQuestion {
     uuid: Uuid,
     question: String,
     test_paper_id: i32,
-    correct_option_id: i32,
 }
 
 #[derive(Insertable)]
@@ -15,12 +14,10 @@ pub struct TestQuestion {
 pub struct NewTestQuestion {
     question: String,
     test_paper_id: i32,
-    correct_option_id: i32,
 }
 
 #[derive(AsChangeset)]
 #[table_name = "test_questions"]
 pub struct TestQuestionPatch {
     question: Option<String>,
-    correct_option_id: Option<i32>,
 }

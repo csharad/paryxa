@@ -19,6 +19,7 @@ table! {
         uuid -> Uuid,
         option -> Text,
         test_question_id -> Int4,
+        is_correct -> Nullable<Bool>,
     }
 }
 
@@ -45,7 +46,6 @@ table! {
         uuid -> Uuid,
         question -> Text,
         test_paper_id -> Int4,
-        correct_option_id -> Int4,
     }
 }
 

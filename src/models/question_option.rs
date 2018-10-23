@@ -7,6 +7,7 @@ pub struct QuestionOption {
     uuid: Uuid,
     option: String,
     test_question_id: i32,
+    is_correct: Option<bool>,
 }
 
 #[derive(Insertable)]
@@ -14,6 +15,7 @@ pub struct QuestionOption {
 pub struct NewQuestionOption {
     option: String,
     test_question_id: i32,
+    is_correct: Option<bool>,
 }
 
 #[derive(AsChangeset)]
@@ -21,4 +23,5 @@ pub struct NewQuestionOption {
 pub struct QuestionOptionPatch {
     option: Option<String>,
     test_question_id: Option<i32>,
+    is_correct: Option<Option<bool>>,
 }
