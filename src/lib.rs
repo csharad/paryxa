@@ -14,7 +14,11 @@ extern crate bcrypt;
 extern crate dotenv;
 extern crate futures;
 extern crate tokio_threadpool;
+#[macro_use]
+extern crate juniper;
+extern crate serde_json;
 
+use actix_web::actix::*;
 use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
@@ -24,7 +28,8 @@ use std::env;
 
 mod db_types;
 mod errors;
-mod handlers;
+mod gql_schema;
+mod graphql;
 mod models;
 #[allow(unused_imports)]
 mod schema;
@@ -40,15 +45,20 @@ fn pg_pool() -> PgPool {
     Pool::new(manager).expect("Postgres connection pool could not be created")
 }
 
-pub use handlers::rest_resources;
+pub use gql_schema::create_schema;
+pub use graphql::{graphiql, graphql, GraphQLExecutor};
 
 pub struct AppState {
     pg_pool: PgPool,
+    gql_executor: Addr<GraphQLExecutor>,
 }
 
 impl AppState {
-    pub fn new() -> AppState {
-        AppState { pg_pool: pg_pool() }
+    pub fn new(gql_executor: Addr<GraphQLExecutor>) -> AppState {
+        AppState {
+            pg_pool: pg_pool(),
+            gql_executor,
+        }
     }
 
     fn pooled_pg(&self) -> SResult<PooledPg> {
