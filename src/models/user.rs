@@ -68,7 +68,37 @@ impl User {
     }
 }
 
-#[derive(Debug, FromSqlRow, AsExpression, Serialize, Deserialize)]
+graphql_object!(User: () |&self| {
+    field id() -> Uuid {
+        self.uuid
+    }
+
+    field first_name() -> &Option<String> {
+        &self.first_name
+    }
+
+    field last_name() -> &Option<String> {
+        &self.last_name
+    }
+
+    field email() -> &str {
+        &self.email
+    }
+
+    field gender() -> &Option<Gender> {
+        &self.gender
+    }
+
+    field contact() -> &Option<String> {
+        &self.contact
+    }
+
+    field type() -> &UserType {
+        &self.type_
+    }
+});
+
+#[derive(Debug, FromSqlRow, AsExpression, Serialize, Deserialize, GraphQLEnum)]
 #[sql_type = "Gender_type"]
 pub enum Gender {
     Male,
@@ -99,7 +129,7 @@ impl ToSql<Gender_type, Pg> for Gender {
     }
 }
 
-#[derive(Debug, FromSqlRow, AsExpression, Serialize, Deserialize)]
+#[derive(Debug, FromSqlRow, AsExpression, Serialize, Deserialize, GraphQLEnum)]
 #[sql_type = "User_type"]
 pub enum UserType {
     Admin,
@@ -175,7 +205,7 @@ impl UserPatch {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, GraphQLInputObject)]
 pub struct UserForm {
     email: String,
     password: String,
@@ -197,7 +227,7 @@ impl UserForm {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, GraphQLInputObject)]
 pub struct UserInfoUpdate {
     first_name: Option<String>,
     is_first_name_null: Option<bool>,
@@ -241,7 +271,7 @@ impl UserInfoUpdate {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, GraphQLInputObject)]
 pub struct UserTypeUpdate {
     #[serde(rename = "type")]
     type_: Option<UserType>,
@@ -257,7 +287,7 @@ impl UserTypeUpdate {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, GraphQLInputObject)]
 pub struct LoginUser {
     email: String,
     password: String,
