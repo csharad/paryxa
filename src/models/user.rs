@@ -13,19 +13,16 @@ use schema::users;
 use std::io::Write;
 use uuid::Uuid;
 
-#[derive(Identifiable, Queryable, Serialize)]
+#[derive(Identifiable, Queryable)]
 pub struct User {
-    #[serde(skip)]
     pub id: i32,
     pub uuid: Uuid,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub email: String,
-    #[serde(skip)]
     password: String,
     pub gender: Option<Gender>,
     pub contact: Option<String>,
-    #[serde(rename = "type")]
     pub type_: UserType,
 }
 
@@ -98,7 +95,7 @@ graphql_object!(User: () |&self| {
     }
 });
 
-#[derive(Debug, FromSqlRow, AsExpression, Serialize, Deserialize, GraphQLEnum)]
+#[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
 #[sql_type = "Gender_type"]
 pub enum Gender {
     Male,
@@ -129,7 +126,7 @@ impl ToSql<Gender_type, Pg> for Gender {
     }
 }
 
-#[derive(Debug, FromSqlRow, AsExpression, Serialize, Deserialize, GraphQLEnum)]
+#[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
 #[sql_type = "User_type"]
 pub enum UserType {
     Admin,
@@ -205,7 +202,7 @@ impl UserPatch {
     }
 }
 
-#[derive(Deserialize, GraphQLInputObject)]
+#[derive(GraphQLInputObject)]
 pub struct UserForm {
     email: String,
     password: String,
@@ -227,7 +224,7 @@ impl UserForm {
     }
 }
 
-#[derive(Deserialize, GraphQLInputObject)]
+#[derive(GraphQLInputObject)]
 pub struct UserInfoUpdate {
     first_name: Option<String>,
     is_first_name_null: Option<bool>,
@@ -271,9 +268,8 @@ impl UserInfoUpdate {
     }
 }
 
-#[derive(Deserialize, GraphQLInputObject)]
+#[derive(GraphQLInputObject)]
 pub struct UserTypeUpdate {
-    #[serde(rename = "type")]
     type_: Option<UserType>,
 }
 
@@ -287,7 +283,7 @@ impl UserTypeUpdate {
     }
 }
 
-#[derive(Deserialize, GraphQLInputObject)]
+#[derive(GraphQLInputObject)]
 pub struct LoginUser {
     email: String,
     password: String,
