@@ -23,7 +23,6 @@ use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
-use errors::SResult;
 use std::env;
 
 mod db_types;
@@ -49,19 +48,11 @@ pub use gql_schema::create_schema;
 pub use graphql::{graphiql, graphql, GraphQLExecutor};
 
 pub struct AppState {
-    pg_pool: PgPool,
-    gql_executor: Addr<GraphQLExecutor>,
+    executor: Addr<GraphQLExecutor>,
 }
 
 impl AppState {
-    pub fn new(gql_executor: Addr<GraphQLExecutor>) -> AppState {
-        AppState {
-            pg_pool: pg_pool(),
-            gql_executor,
-        }
-    }
-
-    fn pooled_pg(&self) -> SResult<PooledPg> {
-        Ok(self.pg_pool.get()?)
+    pub fn new(executor: Addr<GraphQLExecutor>) -> AppState {
+        AppState { executor }
     }
 }

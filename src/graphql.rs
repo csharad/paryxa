@@ -1,25 +1,34 @@
-use actix_web::{actix::*, Error, HttpRequest, HttpResponse, Json, State};
+use actix_web::{self, actix::*, HttpRequest, HttpResponse, Json, State};
+use errors::SResult;
 use futures::Future;
 use gql_schema::Schema;
 use juniper::{graphiql::graphiql_source, http::GraphQLRequest};
 use serde_json;
 use std::sync::Arc;
-use AppState;
+use {pg_pool, AppState, PgPool, PooledPg};
+
+pub struct Context {
+    pub conn: PooledPg,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct GraphQLData(GraphQLRequest);
 
 impl Message for GraphQLData {
-    type Result = Result<String, Error>;
+    type Result = SResult<String>;
 }
 
 pub struct GraphQLExecutor {
     schema: Arc<Schema>,
+    pg_pool: PgPool,
 }
 
 impl GraphQLExecutor {
     pub fn new(schema: Arc<Schema>) -> GraphQLExecutor {
-        GraphQLExecutor { schema }
+        GraphQLExecutor {
+            schema,
+            pg_pool: pg_pool(),
+        }
     }
 }
 
@@ -28,10 +37,15 @@ impl Actor for GraphQLExecutor {
 }
 
 impl Handler<GraphQLData> for GraphQLExecutor {
-    type Result = Result<String, Error>;
+    type Result = SResult<String>;
 
     fn handle(&mut self, msg: GraphQLData, _: &mut Self::Context) -> Self::Result {
-        let res = msg.0.execute(&self.schema, &());
+        let res = msg.0.execute(
+            &self.schema,
+            &Context {
+                conn: self.pg_pool.get()?,
+            },
+        );
         let res_text = serde_json::to_string(&res)?;
         Ok(res_text)
     }
@@ -40,9 +54,9 @@ impl Handler<GraphQLData> for GraphQLExecutor {
 pub fn graphql(
     state: State<AppState>,
     data: Json<GraphQLData>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
+) -> impl Future<Item = HttpResponse, Error = actix_web::Error> {
     state
-        .gql_executor
+        .executor
         .send(data.0)
         .from_err()
         .and_then(|res| match res {

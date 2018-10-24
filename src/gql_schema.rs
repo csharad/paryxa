@@ -1,17 +1,14 @@
+use graphql::Context;
 use juniper::RootNode;
 use std::sync::Arc;
 
 pub struct Query;
 
-graphql_object!(Query: () | &self | {
-    
-});
+graphql_object!(Query: Context | &self | {});
 
 pub struct Mutation;
 
-graphql_object!(Mutation: () | &self | {
-
-});
+graphql_object!(Mutation: Context | &self | {});
 
 pub type Schema = RootNode<'static, Query, Mutation>;
 
