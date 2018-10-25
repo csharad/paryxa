@@ -58,7 +58,7 @@ table! {
         uuid -> Uuid,
         user_id -> Int4,
         test_paper_id -> Int4,
-        test_schedule_id -> Nullable<Int4>,
+        test_schedule_id -> Int4,
         start_time -> Timestamp,
         finish_time -> Nullable<Timestamp>,
         has_withdrawn -> Nullable<Bool>,
