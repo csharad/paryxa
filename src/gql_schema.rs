@@ -26,6 +26,8 @@ graphql_object!(Query: Context | &self | {
     field test_paper(&executor, id: Uuid) -> SResult<TestPaper> {
         Ok(TestPaper::find_by_uuid(id, &executor.context().conn)?)
     }
+
+    
 });
 
 pub struct Mutation;

@@ -18,6 +18,19 @@ impl QuestionOption {
             .filter(question_options::test_question_id.eq(test_question_id))
             .load(conn)?)
     }
+
+    pub fn find_by_uuid_for_test_question(
+        uuid: Uuid,
+        test_question_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<QuestionOption> {
+        Ok(question_options::table
+            .filter(
+                question_options::test_question_id
+                    .eq(test_question_id)
+                    .and(question_options::uuid.eq(uuid)),
+            ).get_result(conn)?)
+    }
 }
 
 graphql_object!(QuestionOption: () | &self | {

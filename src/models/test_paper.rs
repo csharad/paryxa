@@ -53,6 +53,10 @@ graphql_object!(TestPaper: Context |&self| {
     field questions(&executor) -> SResult<Vec<TestQuestion>> {
         TestQuestion::find_all(self.id, &executor.context().conn)
     }
+
+    field question(&executor, id: Uuid) -> SResult<TestQuestion> {
+        TestQuestion::find_by_uuid_for_test_paper(id, self.id, &executor.context().conn)
+    }
 });
 
 #[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]

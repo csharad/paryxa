@@ -19,6 +19,19 @@ impl TestQuestion {
             .filter(test_questions::test_paper_id.eq(test_paper_id))
             .load(conn)?)
     }
+
+    pub fn find_by_uuid_for_test_paper(
+        uuid: Uuid,
+        test_paper_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<TestQuestion> {
+        Ok(test_questions::table
+            .filter(
+                test_questions::test_paper_id
+                    .eq(test_paper_id)
+                    .and(test_questions::uuid.eq(uuid)),
+            ).get_result(conn)?)
+    }
 }
 
 graphql_object!(TestQuestion: Context |&self| {
@@ -32,6 +45,10 @@ graphql_object!(TestQuestion: Context |&self| {
 
     field options(&executor) -> SResult<Vec<QuestionOption>> {
         QuestionOption::find_all(self.id, &executor.context().conn)
+    }
+
+    field option(&executor, id: Uuid) -> SResult<QuestionOption> {
+        QuestionOption::find_by_uuid_for_test_question(id, self.id, &executor.context().conn)
     }
 });
 
