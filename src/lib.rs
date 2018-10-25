@@ -22,7 +22,7 @@ use diesel::{
 };
 use gql_schema::create_schema;
 use std::env;
-use warp::{Filter, Rejection};
+use warp::{filters::BoxedFilter, Filter, Rejection};
 
 mod db_types;
 mod errors;
@@ -55,15 +55,17 @@ pub fn graphiql(
         .and(juniper_warp::graphiql_handler("/graphql"))
 }
 
+fn graphql_context() -> BoxedFilter<(Context,)> {
+    let pg_pool = pg_pool();
+    warp::any()
+        .and_then(move || match pg_pool.get() {
+            Ok(pooled) => Ok(Context { conn: pooled }),
+            Err(_) => Err(warp::reject::server_error()),
+        }).boxed()
+}
+
 pub fn graphql(
 ) -> impl Filter<Extract = (warp::http::Response<Vec<u8>>,), Error = Rejection> + Clone {
-    let pg_pool = pg_pool();
-    let ctx_extractor = warp::any().and_then(move || match pg_pool.get() {
-        Ok(pooled) => Ok(Context { conn: pooled }),
-        Err(_) => Err(warp::reject::server_error()),
-    });
-
-    let graphql_filter = juniper_warp::make_graphql_filter(create_schema(), ctx_extractor.boxed());
-
+    let graphql_filter = juniper_warp::make_graphql_filter(create_schema(), graphql_context());
     warp::path("graphql").and(graphql_filter)
 }
