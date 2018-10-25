@@ -1,9 +1,9 @@
 use diesel::prelude::*;
 use errors::SResult;
-use graphql::Context;
 use models::question_option::QuestionOption;
 use schema::test_questions;
 use uuid::Uuid;
+use Context;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestQuestion {

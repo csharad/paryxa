@@ -6,31 +6,29 @@ extern crate chrono;
 extern crate uuid;
 #[macro_use]
 extern crate failure;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate actix_web;
 extern crate bcrypt;
 extern crate dotenv;
 extern crate futures;
-extern crate tokio_threadpool;
+extern crate serde;
 #[macro_use]
 extern crate juniper;
+extern crate juniper_warp;
 extern crate serde_json;
 #[macro_use]
 extern crate log;
+extern crate warp;
 
-use actix_web::actix::*;
 use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
+use gql_schema::create_schema;
 use std::env;
+use warp::{Filter, Rejection};
 
 mod db_types;
 mod errors;
 mod gql_schema;
-mod graphql;
 mod models;
 #[allow(unused_imports)]
 mod schema;
@@ -46,15 +44,28 @@ fn pg_pool() -> PgPool {
     Pool::new(manager).expect("Postgres connection pool could not be created")
 }
 
-pub use gql_schema::create_schema;
-pub use graphql::{graphiql, graphql, GraphQLExecutor};
-
-pub struct AppState {
-    executor: Addr<GraphQLExecutor>,
+pub struct Context {
+    pub conn: PooledPg,
 }
 
-impl AppState {
-    pub fn new(executor: Addr<GraphQLExecutor>) -> AppState {
-        AppState { executor }
-    }
+impl juniper::Context for Context {}
+
+pub fn graphiql(
+) -> impl Filter<Extract = (warp::http::Response<Vec<u8>>,), Error = Rejection> + Clone {
+    warp::get2()
+        .and(warp::index())
+        .and(juniper_warp::graphiql_handler("/graphql"))
+}
+
+pub fn graphql(
+) -> impl Filter<Extract = (warp::http::Response<Vec<u8>>,), Error = Rejection> + Clone {
+    let pg_pool = pg_pool();
+    let ctx_extractor = warp::any().and_then(move || match pg_pool.get() {
+        Ok(pooled) => Ok(Context { conn: pooled }),
+        Err(_) => Err(warp::reject::server_error()),
+    });
+
+    let graphql_filter = juniper_warp::make_graphql_filter(create_schema(), ctx_extractor.boxed());
+
+    warp::path("graphql").and(graphql_filter)
 }

@@ -6,11 +6,11 @@ use diesel::{
     serialize::{self, IsNull, Output, ToSql},
 };
 use errors::SResult;
-use graphql::Context;
 use models::test_question::TestQuestion;
 use schema::test_papers;
 use std::io::Write;
 use uuid::Uuid;
+use Context;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestPaper {

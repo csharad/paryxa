@@ -1,12 +1,11 @@
 use errors::SResult;
-use graphql::Context;
 use juniper::RootNode;
 use models::{
     test_paper::TestPaper,
     user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate},
 };
-use std::sync::Arc;
 use uuid::Uuid;
+use Context;
 
 pub struct Query;
 
@@ -61,6 +60,6 @@ graphql_object!(Mutation: Context | &self | {
 
 pub type Schema = RootNode<'static, Query, Mutation>;
 
-pub fn create_schema() -> Arc<Schema> {
-    Arc::new(Schema::new(Query, Mutation))
+pub fn create_schema() -> Schema {
+    Schema::new(Query, Mutation)
 }
