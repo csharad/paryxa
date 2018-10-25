@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{Duration, NaiveDateTime, Utc};
 use diesel::prelude::*;
 use errors::SResult;
 use schema::test_schedules;
@@ -39,6 +39,11 @@ graphql_object!(TestSchedule: () |&self| {
 
     field duration() -> i32 {
         self.duration
+    }
+
+    field is_happening() -> bool {
+        let now = Utc::now().naive_utc();
+        self.time < now && self.time + Duration::seconds(self.duration as i64) > now 
     }
 });
 
