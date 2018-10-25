@@ -26,6 +26,10 @@ impl TestPaper {
         Ok(test_papers::table.load(conn)?)
     }
 
+    pub fn find(id: i32, conn: &PgConnection) -> SResult<TestPaper> {
+        Ok(test_papers::table.find(id).get_result(conn)?)
+    }
+
     pub fn find_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<TestPaper> {
         Ok(test_papers::table
             .filter(test_papers::uuid.eq(uuid))

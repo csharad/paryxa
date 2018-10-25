@@ -9,9 +9,11 @@ use diesel::{
     serialize::{self, IsNull, Output, ToSql},
 };
 use errors::{Error, SResult};
+use models::test_subscription::TestSubscription;
 use schema::users;
 use std::io::Write;
 use uuid::Uuid;
+use Context;
 
 #[derive(Identifiable, Queryable)]
 pub struct User {
@@ -65,7 +67,7 @@ impl User {
     }
 }
 
-graphql_object!(User: () |&self| {
+graphql_object!(User: Context |&self| {
     field id() -> Uuid {
         self.uuid
     }
@@ -92,6 +94,10 @@ graphql_object!(User: () |&self| {
 
     field type() -> &UserType {
         &self.type_
+    }
+
+    field test_subscriptions(&executor) -> SResult<Vec<TestSubscription>> {
+        TestSubscription::find_all_for_user(self.id, &executor.context().conn)
     }
 });
 
