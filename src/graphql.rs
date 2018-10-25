@@ -2,7 +2,7 @@ use actix_web::{self, actix::*, HttpRequest, HttpResponse, Json, State};
 use errors::SResult;
 use futures::Future;
 use gql_schema::Schema;
-use juniper::{graphiql::graphiql_source, http::GraphQLRequest};
+use juniper::{self, graphiql::graphiql_source, http::GraphQLRequest};
 use serde_json;
 use std::sync::Arc;
 use {pg_pool, AppState, PgPool, PooledPg};
@@ -10,6 +10,8 @@ use {pg_pool, AppState, PgPool, PooledPg};
 pub struct Context {
     pub conn: PooledPg,
 }
+
+impl juniper::Context for Context {}
 
 #[derive(Serialize, Deserialize)]
 pub struct GraphQLData(GraphQLRequest);
