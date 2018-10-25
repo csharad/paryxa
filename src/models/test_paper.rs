@@ -1,5 +1,6 @@
 use db_types::*;
 use diesel::{
+    self,
     deserialize::{self, FromSql},
     pg::Pg,
     prelude::*,
@@ -103,10 +104,36 @@ pub struct NewTestPaper {
     type_: TestType,
 }
 
+impl NewTestPaper {
+    pub fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
+        Ok(diesel::insert_into(test_papers::table)
+            .values(self)
+            .get_result(conn)?)
+    }
+}
+
 #[derive(AsChangeset)]
 #[table_name = "test_papers"]
 pub struct TestPaperPatch {
     name: Option<String>,
     description: Option<Option<String>>,
     type_: Option<TestType>,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct TestPaperForm {
+    name: String,
+    description: Option<String>,
+    type_: TestType,
+}
+
+impl TestPaperForm {
+    pub fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
+        let new_paper = NewTestPaper {
+            name: self.name,
+            description: self.description,
+            type_: self.type_,
+        };
+        new_paper.save(conn)
+    }
 }

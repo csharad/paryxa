@@ -1,7 +1,7 @@
 use errors::SResult;
 use juniper::RootNode;
 use models::{
-    test_paper::TestPaper,
+    test_paper::{TestPaper, TestPaperForm},
     user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate},
 };
 use uuid::Uuid;
@@ -55,6 +55,10 @@ graphql_object!(Mutation: Context | &self | {
     field logout(&executor) -> &str {
         //TODO: Remove cookies
         "Logged out"
+    }
+
+    field create_test_paper(&executor, test_paper: TestPaperForm) -> SResult<TestPaper> {
+        test_paper.save(&executor.context().conn)
     }
 });
 
