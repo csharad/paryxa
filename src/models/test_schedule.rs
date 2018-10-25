@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use diesel::data_types::PgInterval;
+use diesel::prelude::*;
 use schema::test_schedules;
 use uuid::Uuid;
 
@@ -9,7 +9,7 @@ pub struct TestSchedule {
     uuid: Uuid,
     test_paper_id: i32,
     time: NaiveDateTime,
-    duration: PgInterval,
+    duration: i32,
 }
 
 #[derive(Insertable)]
@@ -17,12 +17,12 @@ pub struct TestSchedule {
 pub struct NewTestSchedule {
     test_paper_id: i32,
     time: NaiveDateTime,
-    duration: PgInterval,
+    duration: i32,
 }
 
 #[derive(AsChangeset)]
 #[table_name = "test_schedules"]
 pub struct TestSchedulePatch {
     time: Option<NaiveDateTime>,
-    duration: Option<PgInterval>,
+    duration: Option<i32>,
 }

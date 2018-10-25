@@ -74,7 +74,7 @@ table! {
         uuid -> Uuid,
         test_paper_id -> Int4,
         time -> Timestamp,
-        duration -> Interval,
+        duration -> Int4,
     }
 }
 
