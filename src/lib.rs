@@ -9,11 +9,9 @@ extern crate failure;
 extern crate bcrypt;
 extern crate dotenv;
 extern crate futures;
-extern crate serde;
 #[macro_use]
 extern crate juniper;
 extern crate juniper_warp;
-extern crate serde_json;
 #[macro_use]
 extern crate log;
 extern crate warp;
