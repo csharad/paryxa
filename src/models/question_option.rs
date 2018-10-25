@@ -1,4 +1,4 @@
-use diesel::prelude::*;
+use diesel::{self, prelude::*};
 use errors::SResult;
 use schema::question_options;
 use uuid::Uuid;
@@ -55,10 +55,43 @@ pub struct NewQuestionOption {
     is_correct: Option<bool>,
 }
 
+impl NewQuestionOption {
+    fn save_multiple(vec: Vec<NewQuestionOption>, conn: &PgConnection) -> SResult<()> {
+        diesel::insert_into(question_options::table)
+            .values(vec)
+            .execute(conn)?;
+        Ok(())
+    }
+}
+
 #[derive(AsChangeset)]
 #[table_name = "question_options"]
 pub struct QuestionOptionPatch {
     option: Option<String>,
     test_question_id: Option<i32>,
     is_correct: Option<Option<bool>>,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct QuestionOptionForm {
+    option: String,
+    is_correct: Option<bool>,
+}
+
+impl QuestionOptionForm {
+    pub fn save_multiple(
+        vec: Vec<QuestionOptionForm>,
+        test_question_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<()> {
+        let new_options: Vec<_> = vec
+            .into_iter()
+            .map(|form| NewQuestionOption {
+                option: form.option,
+                test_question_id,
+                is_correct: form.is_correct,
+            }).collect();
+
+        NewQuestionOption::save_multiple(new_options, conn)
+    }
 }

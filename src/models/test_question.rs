@@ -1,6 +1,6 @@
 use diesel::{self, prelude::*};
 use errors::SResult;
-use models::question_option::QuestionOption;
+use models::question_option::{QuestionOption, QuestionOptionForm};
 use schema::test_questions;
 use uuid::Uuid;
 use Context;
@@ -60,11 +60,11 @@ pub struct NewTestQuestion {
 }
 
 impl NewTestQuestion {
-    fn save(self, conn: &PgConnection) -> SResult<()> {
-        diesel::insert_into(test_questions::table)
+    fn save(self, conn: &PgConnection) -> SResult<i32> {
+        Ok(diesel::insert_into(test_questions::table)
             .values(self)
-            .execute(conn)?;
-        Ok(())
+            .returning(test_questions::id)
+            .get_result(conn)?)
     }
 }
 
@@ -77,6 +77,7 @@ pub struct TestQuestionPatch {
 #[derive(GraphQLInputObject)]
 pub struct TestQuestionForm {
     question: String,
+    options: Vec<QuestionOptionForm>,
 }
 
 impl TestQuestionForm {
@@ -90,7 +91,8 @@ impl TestQuestionForm {
                 question: quest.question,
                 test_paper_id,
             };
-            new_quest.save(conn)?;
+            let new_id = new_quest.save(conn)?;
+            QuestionOptionForm::save_multiple(quest.options, new_id, conn)?;
         }
         Ok(())
     }
