@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+use errors::SResult;
 use schema::test_schedules;
 use uuid::Uuid;
 
@@ -11,6 +12,31 @@ pub struct TestSchedule {
     time: NaiveDateTime,
     duration: i32,
 }
+
+impl TestSchedule {
+    pub fn find_all_for_test_paper(
+        test_paper_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<Vec<TestSchedule>> {
+        Ok(test_schedules::table
+            .filter(test_schedules::test_paper_id.eq(test_paper_id))
+            .load(conn)?)
+    }
+}
+
+graphql_object!(TestSchedule: () |&self| {
+    field id() -> Uuid {
+        self.uuid
+    }
+
+    field time() -> &NaiveDateTime {
+        &self.time
+    }
+
+    field duration() -> i32 {
+        self.duration
+    }
+});
 
 #[derive(Insertable)]
 #[table_name = "test_schedules"]

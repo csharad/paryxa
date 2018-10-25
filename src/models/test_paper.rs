@@ -6,7 +6,7 @@ use diesel::{
     serialize::{self, IsNull, Output, ToSql},
 };
 use errors::SResult;
-use models::test_question::TestQuestion;
+use models::{test_question::TestQuestion, test_schedule::TestSchedule};
 use schema::test_papers;
 use std::io::Write;
 use uuid::Uuid;
@@ -60,6 +60,10 @@ graphql_object!(TestPaper: Context |&self| {
 
     field question(&executor, id: Uuid) -> SResult<TestQuestion> {
         TestQuestion::find_by_uuid_for_test_paper(id, self.id, &executor.context().conn)
+    }
+
+    field test_schedules(&executor) -> SResult<Vec<TestSchedule>> {
+        TestSchedule::find_all_for_test_paper(self.id, &executor.context().conn)
     }
 });
 
