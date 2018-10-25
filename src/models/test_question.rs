@@ -1,4 +1,4 @@
-use diesel::prelude::*;
+use diesel::{self, prelude::*};
 use errors::SResult;
 use models::question_option::QuestionOption;
 use schema::test_questions;
@@ -59,8 +59,39 @@ pub struct NewTestQuestion {
     test_paper_id: i32,
 }
 
+impl NewTestQuestion {
+    fn save(self, conn: &PgConnection) -> SResult<()> {
+        diesel::insert_into(test_questions::table)
+            .values(self)
+            .execute(conn)?;
+        Ok(())
+    }
+}
+
 #[derive(AsChangeset)]
 #[table_name = "test_questions"]
 pub struct TestQuestionPatch {
     question: Option<String>,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct TestQuestionForm {
+    question: String,
+}
+
+impl TestQuestionForm {
+    pub fn save_multiple(
+        vec: Vec<TestQuestionForm>,
+        test_paper_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<()> {
+        for quest in vec {
+            let new_quest = NewTestQuestion {
+                question: quest.question,
+                test_paper_id,
+            };
+            new_quest.save(conn)?;
+        }
+        Ok(())
+    }
 }

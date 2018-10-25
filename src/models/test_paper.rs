@@ -7,7 +7,10 @@ use diesel::{
     serialize::{self, IsNull, Output, ToSql},
 };
 use errors::SResult;
-use models::{test_question::TestQuestion, test_schedule::TestSchedule};
+use models::{
+    test_question::{TestQuestion, TestQuestionForm},
+    test_schedule::TestSchedule,
+};
 use schema::test_papers;
 use std::io::Write;
 use uuid::Uuid;
@@ -125,15 +128,20 @@ pub struct TestPaperForm {
     name: String,
     description: Option<String>,
     type_: TestType,
+    questions: Vec<TestQuestionForm>,
 }
 
 impl TestPaperForm {
     pub fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
-        let new_paper = NewTestPaper {
-            name: self.name,
-            description: self.description,
-            type_: self.type_,
-        };
-        new_paper.save(conn)
+        conn.transaction(|| {
+            let new_paper = NewTestPaper {
+                name: self.name,
+                description: self.description,
+                type_: self.type_,
+            };
+            let saved_paper = new_paper.save(conn)?;
+            TestQuestionForm::save_multiple(self.questions, saved_paper.id, conn)?;
+            Ok(saved_paper)
+        })
     }
 }
