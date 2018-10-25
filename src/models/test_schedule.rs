@@ -22,6 +22,10 @@ impl TestSchedule {
             .filter(test_schedules::test_paper_id.eq(test_paper_id))
             .load(conn)?)
     }
+
+    pub fn find(id: i32, conn: &PgConnection) -> SResult<TestSchedule> {
+        Ok(test_schedules::table.find(id).get_result(conn)?)
+    }
 }
 
 graphql_object!(TestSchedule: () |&self| {

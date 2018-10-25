@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use errors::SResult;
-use models::test_paper::TestPaper;
+use models::{test_paper::TestPaper, test_schedule::TestSchedule};
 use schema::test_subscriptions;
 use uuid::Uuid;
 use Context;
@@ -29,6 +29,10 @@ graphql_object!(TestSubscription: Context | &self | {
 
     field test_paper(&executor) -> SResult<TestPaper> {
         TestPaper::find(self.test_paper_id, &executor.context().conn)
+    }
+
+    field test_schedule(&executor) -> SResult<TestSchedule> {
+        TestSchedule::find(self.test_schedule_id, &executor.context().conn)
     }
 });
 
