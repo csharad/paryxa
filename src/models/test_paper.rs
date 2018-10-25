@@ -2,8 +2,10 @@ use db_types::*;
 use diesel::{
     deserialize::{self, FromSql},
     pg::Pg,
+    prelude::*,
     serialize::{self, IsNull, Output, ToSql},
 };
+use errors::SResult;
 use schema::test_papers;
 use std::io::Write;
 use uuid::Uuid;
@@ -17,7 +19,37 @@ pub struct TestPaper {
     type_: TestType,
 }
 
-#[derive(Debug, FromSqlRow, AsExpression)]
+impl TestPaper {
+    pub fn find_all(conn: &PgConnection) -> SResult<Vec<TestPaper>> {
+        Ok(test_papers::table.load(conn)?)
+    }
+
+    pub fn find_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<TestPaper> {
+        Ok(test_papers::table
+            .filter(test_papers::uuid.eq(uuid))
+            .get_result(conn)?)
+    }
+}
+
+graphql_object!(TestPaper: () |&self| {
+    field id() -> Uuid {
+        self.uuid
+    }
+
+    field name() -> &str {
+        &self.name
+    }
+
+    field description() -> &Option<String> {
+        &self.description
+    }
+
+    field type() -> &TestType {
+        &self.type_
+    }
+});
+
+#[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
 #[sql_type = "Test_type"]
 pub enum TestType {
     Scheduled,

@@ -1,7 +1,10 @@
 use errors::SResult;
 use graphql::Context;
 use juniper::RootNode;
-use models::user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate};
+use models::{
+    test_paper::TestPaper,
+    user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate},
+};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -14,6 +17,14 @@ graphql_object!(Query: Context | &self | {
 
     field user(&executor, id: Uuid) -> SResult<User> {
         Ok(User::find_by_uuid(id, &executor.context().conn)?)
+    }
+
+    field test_papers(&executor) -> SResult<Vec<TestPaper>> {
+        Ok(TestPaper::find_all(&executor.context().conn)?)
+    }
+
+    field test_paper(&executor, id: Uuid) -> SResult<TestPaper> {
+        Ok(TestPaper::find_by_uuid(id, &executor.context().conn)?)
     }
 });
 
