@@ -9,7 +9,7 @@ use diesel::{
     serialize::{self, IsNull, Output, ToSql},
 };
 use errors::{Error, SResult};
-use models::test_subscription::TestSubscription;
+use models::{test_room::TestRoom, test_subscription::TestSubscription};
 use schema::users;
 use std::io::Write;
 use uuid::Uuid;
@@ -98,6 +98,10 @@ graphql_object!(User: Context |&self| {
 
     field test_subscriptions(&executor) -> SResult<Vec<TestSubscription>> {
         TestSubscription::find_all_for_user(self.id, &executor.context().conn)
+    }
+
+    field test_rooms(&executor) -> SResult<Vec<TestRoom>> {
+        TestRoom::find_for_user(self.id, &executor.context().conn)
     }
 });
 
