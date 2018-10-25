@@ -1,8 +1,8 @@
-use actix_web::ResponseError;
 use bcrypt::BcryptError;
 use diesel::r2d2::PoolError;
-use diesel::result::Error as DieselError;
-use serde_json::Error as SerdeJsonError;
+use diesel::result::{DatabaseErrorKind, Error as DieselError};
+use juniper::{FieldError, IntoFieldError};
+use serde_json::{error::Category as SerdeErrorCategory, Error as SerdeJsonError};
 
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -42,6 +42,94 @@ impl From<SerdeJsonError> for Error {
     }
 }
 
-impl ResponseError for Error {}
+impl IntoFieldError for Error {
+    fn into_field_error(self) -> FieldError {
+        match self {
+            Error::Diesel(err) => match err {
+                DieselError::NotFound => FieldError::new(
+                    "Could not find the requested resource.",
+                    graphql_value!({
+                        "kind": "NOT_FOUND"
+                    }),
+                ),
+                DieselError::QueryBuilderError(err) => {
+                    error!("DieselError::QueryBuilderError: {:?}", err);
+                    FieldError::new(
+                        "Tried to update a resource without a value.",
+                        graphql_value!({
+                            "kind": "NULL_UPDATE"
+                        }),
+                    )
+                }
+                DieselError::DatabaseError(kind, err) => match kind {
+                    DatabaseErrorKind::UniqueViolation => FieldError::new(
+                        "Provided value is not unique.",
+                        graphql_value!({
+                            "kind": "NOT_UNIQUE"
+                        }),
+                    ),
+                    DatabaseErrorKind::ForeignKeyViolation => FieldError::new(
+                        "Could not find the requested resource.",
+                        graphql_value!({
+                            "kind": "NOT_FOUND"
+                        }),
+                    ),
+                    _ => {
+                        error!("DieselError::DatabaseError: {:?}", err);
+                        internal_server_error()
+                    }
+                },
+                _ => {
+                    error!("DieselError: {:?}", err);
+                    internal_server_error()
+                }
+            },
+            Error::Bcrypt(err) => {
+                error!("BcryptError: {:?}", err);
+                internal_server_error()
+            }
+            Error::R2D2(err) => {
+                error!("R2D2Error: {:?}", err);
+                internal_server_error()
+            }
+            Error::SerdeJson(err) => match err.classify() {
+                SerdeErrorCategory::Io => {
+                    error!("SerdeError::Io: {:?}", err);
+                    internal_server_error()
+                }
+                SerdeErrorCategory::Syntax => serde_error(&err, "INVALID_JSON"),
+                SerdeErrorCategory::Data => serde_error(&err, "INVALID_DATA"),
+                SerdeErrorCategory::Eof => serde_error(&err, "INVALID_JSON"),
+            },
+            Error::IncorrectPassword => FieldError::new(
+                "Given password was incorrect.",
+                graphql_value!({
+                    "kind": "INCORRECT_PASSWORD"
+                }),
+            ),
+        }
+    }
+}
+
+fn internal_server_error() -> FieldError {
+    FieldError::new(
+        "Something bad happened.",
+        graphql_value!({
+            "kind": "INTERNAL_SERVER_ERROR"
+        }),
+    )
+}
+
+fn serde_error(err: &SerdeJsonError, type_: &'static str) -> FieldError {
+    let (line, column) = (err.line() as i32, err.column() as i32);
+    FieldError::new(
+        "Could not serialize/deserialize data to/from JSON.",
+        graphql_value!({
+            "kind": type_,
+            "line": line,
+            "column": column
+        }),
+    )
+}
 
 pub type SResult<T> = Result<T, Error>;

@@ -17,6 +17,8 @@ extern crate tokio_threadpool;
 #[macro_use]
 extern crate juniper;
 extern crate serde_json;
+#[macro_use]
+extern crate log;
 
 use actix_web::actix::*;
 use diesel::{
