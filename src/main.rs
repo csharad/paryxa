@@ -1,58 +1,19 @@
-extern crate actix_web;
 extern crate env_logger;
 extern crate paryxa_server;
+extern crate warp;
 
-use actix_web::{
-    actix::*,
-    middleware::{
-        identity::{CookieIdentityPolicy, IdentityService},
-        Logger,
-    },
-    server, App, HttpRequest, HttpResponse,
-};
-use paryxa_server::{create_schema, graphiql, graphql, AppState, GraphQLExecutor};
+use paryxa_server::{graphiql, graphql};
 use std::env;
+use warp::Filter;
 
-fn logger() -> Logger {
-    if cfg!(debug_assertions) {
-        Logger::new(r#""%r" - %D ms"#)
-    } else {
-        Logger::default()
-    }
-}
-
-fn not_found(_: &HttpRequest<AppState>) -> HttpResponse {
-    HttpResponse::NotFound()
-        .content_type("text/plain; charset=utf8")
-        .body("Not Found")
-}
+const LOG: &str = "paryxa-server";
 
 fn main() {
     if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "actix_web=info");
+        env::set_var("RUST_LOG", LOG);
     }
+    let log = warp::log(LOG);
+
     env_logger::init();
-    let sys = System::new("paryxa");
-
-    let schema = create_schema();
-    let addr = SyncArbiter::start(3, move || GraphQLExecutor::new(schema.clone()));
-
-    server::new(move || {
-        App::with_state(AppState::new(addr.clone()))
-            .middleware(logger())
-            .middleware(IdentityService::new(
-                // Set a different private key
-                CookieIdentityPolicy::new(&[0; 32]).name("paryxahub"),
-            )).resource("/graphql", |r| r.post().with_async(graphql))
-            .resource("/", |r| {
-                if cfg!(debug_assertions) {
-                    r.get().f(graphiql);
-                }
-            }).default_resource(|r| r.f(not_found))
-    }).bind("127.0.0.1:4000")
-    .unwrap()
-    .start();
-
-    println!("Started http server at http://localhost:4000");
-    let _ = sys.run();
+    warp::serve(graphiql().or(graphql()).with(log)).run(([127, 0, 0, 1], 4000));
 }
