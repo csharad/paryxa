@@ -6,6 +6,8 @@ use diesel::{
     serialize::{self, IsNull, Output, ToSql},
 };
 use errors::SResult;
+use graphql::Context;
+use models::test_question::TestQuestion;
 use schema::test_papers;
 use std::io::Write;
 use uuid::Uuid;
@@ -31,7 +33,7 @@ impl TestPaper {
     }
 }
 
-graphql_object!(TestPaper: () |&self| {
+graphql_object!(TestPaper: Context |&self| {
     field id() -> Uuid {
         self.uuid
     }
@@ -46,6 +48,10 @@ graphql_object!(TestPaper: () |&self| {
 
     field type() -> &TestType {
         &self.type_
+    }
+
+    field questions(&executor) -> SResult<Vec<TestQuestion>> {
+        TestQuestion::find_all(self.id, &executor.context().conn)
     }
 });
 
