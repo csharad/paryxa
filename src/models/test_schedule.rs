@@ -1,9 +1,9 @@
 use chrono::{Duration, NaiveDateTime, Utc};
 use diesel::{self, prelude::*};
 use errors::SResult;
+use models::test_paper::TestPaper;
 use schema::test_schedules;
 use uuid::Uuid;
-use models::test_paper::TestPaper;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestSchedule {
@@ -44,7 +44,7 @@ graphql_object!(TestSchedule: () |&self| {
 
     field is_happening() -> bool {
         let now = Utc::now().naive_utc();
-        self.time < now && self.time + Duration::seconds(self.duration as i64) > now 
+        self.time < now && self.time + Duration::seconds(self.duration as i64) > now
     }
 });
 
@@ -58,7 +58,9 @@ struct NewTestSchedule {
 
 impl NewTestSchedule {
     fn save(self, conn: &PgConnection) -> SResult<TestSchedule> {
-        Ok(diesel::insert_into(test_schedules::table).values(self).get_result(conn)?)
+        Ok(diesel::insert_into(test_schedules::table)
+            .values(self)
+            .get_result(conn)?)
     }
 }
 
@@ -67,6 +69,16 @@ impl NewTestSchedule {
 struct TestSchedulePatch {
     time: Option<NaiveDateTime>,
     duration: Option<i32>,
+}
+
+impl TestSchedulePatch {
+    fn save(self, uuid: Uuid, conn: &PgConnection) -> SResult<TestSchedule> {
+        Ok(
+            diesel::update(test_schedules::table.filter(test_schedules::uuid.eq(uuid)))
+                .set(self)
+                .get_result(conn)?,
+        )
+    }
 }
 
 #[derive(GraphQLInputObject)]
@@ -82,8 +94,25 @@ impl TestScheduleForm {
         let new_schedule = NewTestSchedule {
             test_paper_id: test_paper.id,
             time: self.time,
-            duration: self.duration
+            duration: self.duration,
         };
         new_schedule.save(conn)
+    }
+}
+
+#[derive(GraphQLInputObject)]
+pub struct TestScheduleUpdate {
+    id: Uuid,
+    time: Option<NaiveDateTime>,
+    duration: Option<i32>,
+}
+
+impl TestScheduleUpdate {
+    pub fn save(self, conn: &PgConnection) -> SResult<TestSchedule> {
+        let schedule_patch = TestSchedulePatch {
+            time: self.time,
+            duration: self.duration,
+        };
+        schedule_patch.save(self.id, conn)
     }
 }

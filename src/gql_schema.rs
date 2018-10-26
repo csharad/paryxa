@@ -2,7 +2,7 @@ use errors::SResult;
 use juniper::RootNode;
 use models::{
     test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
-    test_schedule::{TestSchedule, TestScheduleForm},
+    test_schedule::{TestSchedule, TestScheduleForm, TestScheduleUpdate},
     user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate},
 };
 use uuid::Uuid;
@@ -71,6 +71,10 @@ graphql_object!(Mutation: Context | &self | {
     }
 
     field create_test_schedule(&executor, schedule: TestScheduleForm) -> SResult<TestSchedule> {
+        schedule.save(&executor.context().conn)
+    }
+
+    field update_test_schedule(&executor, schedule: TestScheduleUpdate) -> SResult<TestSchedule> {
         schedule.save(&executor.context().conn)
     }
 });
