@@ -8,7 +8,7 @@ use diesel::{
 };
 use errors::SResult;
 use models::{
-    test_question::{TestQuestion, TestQuestionForm},
+    test_question::{TestQuestion, TestQuestionForm, TestQuestionsUpdate},
     test_schedule::TestSchedule,
 };
 use schema::test_papers;
@@ -162,15 +162,20 @@ pub struct TestPaperUpdate {
     name: Option<String>,
     description: Option<Option<String>>,
     type_: Option<TestType>,
+    questions: TestQuestionsUpdate,
 }
 
 impl TestPaperUpdate {
     pub fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
-        let paper_patch = TestPaperPatch {
-            name: self.name,
-            description: self.description,
-            type_: self.type_,
-        };
-        paper_patch.save(self.id, conn)
+        conn.transaction(|| {
+            let paper_patch = TestPaperPatch {
+                name: self.name,
+                description: self.description,
+                type_: self.type_,
+            };
+            let saved = paper_patch.save(self.id, conn)?;
+            self.questions.save(saved.id, conn)?;
+            Ok(saved)
+        })
     }
 }

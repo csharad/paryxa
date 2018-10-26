@@ -32,6 +32,21 @@ impl TestQuestion {
                     .and(test_questions::uuid.eq(uuid)),
             ).get_result(conn)?)
     }
+
+    fn delete_multiple(vec: Vec<Uuid>, test_paper_id: i32, conn: &PgConnection) -> SResult<()> {
+        let delete_count = diesel::delete(
+            test_questions::table.filter(
+                test_questions::uuid
+                    .eq_any(&vec)
+                    .and(test_questions::test_paper_id.eq(test_paper_id)),
+            ),
+        ).execute(conn)?;
+
+        if delete_count != vec.len() {
+            Err(diesel::NotFound)?;
+        }
+        Ok(())
+    }
 }
 
 graphql_object!(TestQuestion: Context |&self| {
@@ -74,6 +89,20 @@ struct TestQuestionPatch {
     question: Option<String>,
 }
 
+impl TestQuestionPatch {
+    fn save(self, uuid: Uuid, test_paper_id: i32, conn: &PgConnection) -> SResult<()> {
+        diesel::update(
+            test_questions::table.filter(
+                test_questions::uuid
+                    .eq(uuid)
+                    .and(test_questions::test_paper_id.eq(test_paper_id)),
+            ),
+        ).set(self)
+        .execute(conn)?;
+        Ok(())
+    }
+}
+
 #[derive(GraphQLInputObject)]
 pub struct TestQuestionForm {
     question: String,
@@ -94,6 +123,44 @@ impl TestQuestionForm {
             let new_id = new_quest.save(conn)?;
             QuestionOptionForm::save_multiple(quest.options, new_id, conn)?;
         }
+        Ok(())
+    }
+}
+
+#[derive(GraphQLInputObject)]
+struct TestQuestionUpdate {
+    id: Uuid,
+    question: Option<String>,
+}
+
+impl TestQuestionUpdate {
+    fn save_multiple(
+        vec: Vec<TestQuestionUpdate>,
+        test_paper_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<()> {
+        for quest in vec {
+            let quest_patch = TestQuestionPatch {
+                question: quest.question,
+            };
+            quest_patch.save(quest.id, test_paper_id, conn)?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(GraphQLInputObject)]
+pub struct TestQuestionsUpdate {
+    new: Vec<TestQuestionForm>,
+    update: Vec<TestQuestionUpdate>,
+    remove: Vec<Uuid>,
+}
+
+impl TestQuestionsUpdate {
+    pub fn save(self, test_paper_id: i32, conn: &PgConnection) -> SResult<()> {
+        TestQuestionForm::save_multiple(self.new, test_paper_id, conn)?;
+        TestQuestionUpdate::save_multiple(self.update, test_paper_id, conn)?;
+        TestQuestion::delete_multiple(self.remove, test_paper_id, conn)?;
         Ok(())
     }
 }
