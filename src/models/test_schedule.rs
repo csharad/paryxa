@@ -1,8 +1,9 @@
 use chrono::{Duration, NaiveDateTime, Utc};
-use diesel::prelude::*;
+use diesel::{self, prelude::*};
 use errors::SResult;
 use schema::test_schedules;
 use uuid::Uuid;
+use models::test_paper::TestPaper;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestSchedule {
@@ -55,9 +56,34 @@ struct NewTestSchedule {
     duration: i32,
 }
 
+impl NewTestSchedule {
+    fn save(self, conn: &PgConnection) -> SResult<TestSchedule> {
+        Ok(diesel::insert_into(test_schedules::table).values(self).get_result(conn)?)
+    }
+}
+
 #[derive(AsChangeset)]
 #[table_name = "test_schedules"]
 struct TestSchedulePatch {
     time: Option<NaiveDateTime>,
     duration: Option<i32>,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct TestScheduleForm {
+    test_paper_id: Uuid,
+    time: NaiveDateTime,
+    duration: i32,
+}
+
+impl TestScheduleForm {
+    pub fn save(self, conn: &PgConnection) -> SResult<TestSchedule> {
+        let test_paper = TestPaper::find_by_uuid(self.test_paper_id, conn)?;
+        let new_schedule = NewTestSchedule {
+            test_paper_id: test_paper.id,
+            time: self.time,
+            duration: self.duration
+        };
+        new_schedule.save(conn)
+    }
 }

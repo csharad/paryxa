@@ -18,11 +18,11 @@ use Context;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestPaper {
-    id: i32,
-    uuid: Uuid,
-    name: String,
-    description: Option<String>,
-    type_: TestType,
+    pub id: i32,
+    pub uuid: Uuid,
+    pub name: String,
+    pub description: Option<String>,
+    pub type_: TestType,
 }
 
 impl TestPaper {
