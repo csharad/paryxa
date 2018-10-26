@@ -39,6 +39,13 @@ impl TestPaper {
             .filter(test_papers::uuid.eq(uuid))
             .get_result(conn)?)
     }
+
+    pub fn delete_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<TestPaper> {
+        Ok(
+            diesel::delete(test_papers::table.filter(test_papers::uuid.eq(uuid)))
+                .get_result(conn)?,
+        )
+    }
 }
 
 graphql_object!(TestPaper: Context |&self| {

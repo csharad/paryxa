@@ -64,6 +64,10 @@ graphql_object!(Mutation: Context | &self | {
     field update_test_paper(&executor, test_paper: TestPaperUpdate) -> SResult<TestPaper> {
         test_paper.save(&executor.context().conn)
     }
+
+    field delete_test_paper(&executor, id: Uuid) -> SResult<TestPaper> {
+        TestPaper::delete_by_uuid(id, &executor.context().conn)
+    }
 });
 
 pub type Schema = RootNode<'static, Query, Mutation>;
