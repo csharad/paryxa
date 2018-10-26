@@ -1,6 +1,6 @@
 use diesel::{self, prelude::*};
 use errors::SResult;
-use models::question_option::{QuestionOption, QuestionOptionForm};
+use models::question_option::{QuestionOption, QuestionOptionForm, QuestionOptionsUpdate};
 use schema::test_questions;
 use uuid::Uuid;
 use Context;
@@ -90,16 +90,17 @@ struct TestQuestionPatch {
 }
 
 impl TestQuestionPatch {
-    fn save(self, uuid: Uuid, test_paper_id: i32, conn: &PgConnection) -> SResult<()> {
-        diesel::update(
+    fn save(self, uuid: Uuid, test_paper_id: i32, conn: &PgConnection) -> SResult<i32> {
+        let id = diesel::update(
             test_questions::table.filter(
                 test_questions::uuid
                     .eq(uuid)
                     .and(test_questions::test_paper_id.eq(test_paper_id)),
             ),
         ).set(self)
-        .execute(conn)?;
-        Ok(())
+        .returning(test_questions::id)
+        .get_result(conn)?;
+        Ok(id)
     }
 }
 
@@ -131,6 +132,7 @@ impl TestQuestionForm {
 struct TestQuestionUpdate {
     id: Uuid,
     question: Option<String>,
+    options: QuestionOptionsUpdate,
 }
 
 impl TestQuestionUpdate {
@@ -143,7 +145,8 @@ impl TestQuestionUpdate {
             let quest_patch = TestQuestionPatch {
                 question: quest.question,
             };
-            quest_patch.save(quest.id, test_paper_id, conn)?;
+            let question_id = quest_patch.save(quest.id, test_paper_id, conn)?;
+            quest.options.save(question_id, conn)?;
         }
         Ok(())
     }

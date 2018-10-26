@@ -31,6 +31,21 @@ impl QuestionOption {
                     .and(question_options::uuid.eq(uuid)),
             ).get_result(conn)?)
     }
+
+    fn delete_multiple(vec: Vec<Uuid>, test_question_id: i32, conn: &PgConnection) -> SResult<()> {
+        let delete_count = diesel::delete(
+            question_options::table.filter(
+                question_options::uuid
+                    .eq_any(&vec)
+                    .and(question_options::test_question_id.eq(test_question_id)),
+            ),
+        ).execute(conn)?;
+
+        if delete_count != vec.len() {
+            Err(diesel::NotFound)?;
+        }
+        Ok(())
+    }
 }
 
 graphql_object!(QuestionOption: () | &self | {
@@ -68,8 +83,21 @@ impl NewQuestionOption {
 #[table_name = "question_options"]
 struct QuestionOptionPatch {
     option: Option<String>,
-    test_question_id: Option<i32>,
     is_correct: Option<Option<bool>>,
+}
+
+impl QuestionOptionPatch {
+    fn save(self, uuid: Uuid, test_question_id: i32, conn: &PgConnection) -> SResult<()> {
+        diesel::update(
+            question_options::table.filter(
+                question_options::uuid
+                    .eq(uuid)
+                    .and(question_options::test_question_id.eq(test_question_id)),
+            ),
+        ).set(self)
+        .execute(conn)?;
+        Ok(())
+    }
 }
 
 #[derive(GraphQLInputObject)]
@@ -93,5 +121,44 @@ impl QuestionOptionForm {
             }).collect();
 
         NewQuestionOption::save_multiple(new_options, conn)
+    }
+}
+
+#[derive(GraphQLInputObject)]
+struct QuestionOptionUpdate {
+    id: Uuid,
+    option: Option<String>,
+    is_correct: Option<Option<bool>>,
+}
+
+impl QuestionOptionUpdate {
+    fn save_multiple(
+        vec: Vec<QuestionOptionUpdate>,
+        test_question_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<()> {
+        for opt in vec {
+            let opt_patch = QuestionOptionPatch {
+                option: opt.option,
+                is_correct: opt.is_correct,
+            };
+            opt_patch.save(opt.id, test_question_id, conn)?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(GraphQLInputObject)]
+pub struct QuestionOptionsUpdate {
+    new: Vec<QuestionOptionForm>,
+    update: Vec<QuestionOptionUpdate>,
+    remove: Vec<Uuid>,
+}
+
+impl QuestionOptionsUpdate {
+    pub fn save(self, test_question_id: i32, conn: &PgConnection) -> SResult<()> {
+        QuestionOptionForm::save_multiple(self.new, test_question_id, conn)?;
+        QuestionOptionUpdate::save_multiple(self.update, test_question_id, conn)?;
+        QuestionOption::delete_multiple(self.remove, test_question_id, conn)
     }
 }
