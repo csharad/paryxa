@@ -131,6 +131,25 @@ impl TestPaperPatch {
                 .get_result(conn)?,
         )
     }
+
+    fn is_none(&self) -> bool {
+        match self {
+            TestPaperPatch {
+                name: None,
+                description: None,
+                type_: None,
+            } => true,
+            _ => false,
+        }
+    }
+
+    fn save_or_find(self, uuid: Uuid, conn: &PgConnection) -> SResult<TestPaper> {
+        if self.is_none() {
+            TestPaper::find_by_uuid(uuid, conn)
+        } else {
+            self.save(uuid, conn)
+        }
+    }
 }
 
 #[derive(GraphQLInputObject)]
@@ -173,7 +192,7 @@ impl TestPaperUpdate {
                 description: self.description,
                 type_: self.type_,
             };
-            let saved = paper_patch.save(self.id, conn)?;
+            let saved = paper_patch.save_or_find(self.id, conn)?;
             self.questions.save(saved.id, conn)?;
             Ok(saved)
         })
