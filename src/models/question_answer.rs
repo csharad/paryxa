@@ -10,7 +10,7 @@ pub struct QuestionAnswer {
 
 #[derive(Insertable)]
 #[table_name = "question_answers"]
-pub struct NewQuestionAnswer {
+struct NewQuestionAnswer {
     test_room_id: i32,
     test_question_id: i32,
     answered_option: i32,
@@ -18,6 +18,6 @@ pub struct NewQuestionAnswer {
 
 #[derive(AsChangeset)]
 #[table_name = "question_answers"]
-pub struct QuestionAnswerPatch {
+struct QuestionAnswerPatch {
     answered_option: Option<i32>,
 }

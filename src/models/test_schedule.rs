@@ -49,7 +49,7 @@ graphql_object!(TestSchedule: () |&self| {
 
 #[derive(Insertable)]
 #[table_name = "test_schedules"]
-pub struct NewTestSchedule {
+struct NewTestSchedule {
     test_paper_id: i32,
     time: NaiveDateTime,
     duration: i32,
@@ -57,7 +57,7 @@ pub struct NewTestSchedule {
 
 #[derive(AsChangeset)]
 #[table_name = "test_schedules"]
-pub struct TestSchedulePatch {
+struct TestSchedulePatch {
     time: Option<NaiveDateTime>,
     duration: Option<i32>,
 }

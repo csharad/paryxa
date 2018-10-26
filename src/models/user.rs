@@ -172,7 +172,7 @@ impl Default for UserType {
 
 #[derive(Insertable, Default)]
 #[table_name = "users"]
-pub struct NewUser {
+struct NewUser {
     first_name: Option<String>,
     last_name: Option<String>,
     email: String,
@@ -193,7 +193,7 @@ impl NewUser {
 
 #[derive(Default, AsChangeset)]
 #[table_name = "users"]
-pub struct UserPatch {
+struct UserPatch {
     first_name: Option<Option<String>>,
     last_name: Option<Option<String>>,
     email: Option<String>,

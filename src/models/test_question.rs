@@ -54,7 +54,7 @@ graphql_object!(TestQuestion: Context |&self| {
 
 #[derive(Insertable)]
 #[table_name = "test_questions"]
-pub struct NewTestQuestion {
+struct NewTestQuestion {
     question: String,
     test_paper_id: i32,
 }
@@ -70,7 +70,7 @@ impl NewTestQuestion {
 
 #[derive(AsChangeset)]
 #[table_name = "test_questions"]
-pub struct TestQuestionPatch {
+struct TestQuestionPatch {
     question: Option<String>,
 }
 

@@ -101,14 +101,14 @@ impl ToSql<Test_type, Pg> for TestType {
 
 #[derive(Insertable)]
 #[table_name = "test_papers"]
-pub struct NewTestPaper {
+struct NewTestPaper {
     name: String,
     description: Option<String>,
     type_: TestType,
 }
 
 impl NewTestPaper {
-    pub fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
+    fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
         Ok(diesel::insert_into(test_papers::table)
             .values(self)
             .get_result(conn)?)
@@ -117,7 +117,7 @@ impl NewTestPaper {
 
 #[derive(AsChangeset)]
 #[table_name = "test_papers"]
-pub struct TestPaperPatch {
+struct TestPaperPatch {
     name: Option<String>,
     description: Option<Option<String>>,
     type_: Option<TestType>,

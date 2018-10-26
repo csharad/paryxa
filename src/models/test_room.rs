@@ -54,7 +54,7 @@ graphql_object!(TestRoom: Context | &self | {
 
 #[derive(Insertable)]
 #[table_name = "test_rooms"]
-pub struct NewTestRoom {
+struct NewTestRoom {
     user_id: i32,
     test_paper_id: i32,
     test_schedule_id: i32,
@@ -65,7 +65,7 @@ pub struct NewTestRoom {
 
 #[derive(AsChangeset)]
 #[table_name = "test_rooms"]
-pub struct TestRoomPatch {
+struct TestRoomPatch {
     finish_time: Option<NaiveDateTime>,
     has_withdrawn: Option<bool>,
 }

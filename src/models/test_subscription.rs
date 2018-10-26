@@ -38,7 +38,7 @@ graphql_object!(TestSubscription: Context | &self | {
 
 #[derive(Insertable)]
 #[table_name = "test_subscriptions"]
-pub struct NewTestSubscription {
+struct NewTestSubscription {
     user_id: i32,
     test_paper_id: i32,
     test_schedule_id: i32,

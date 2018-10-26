@@ -49,7 +49,7 @@ graphql_object!(QuestionOption: () | &self | {
 
 #[derive(Insertable)]
 #[table_name = "question_options"]
-pub struct NewQuestionOption {
+struct NewQuestionOption {
     option: String,
     test_question_id: i32,
     is_correct: Option<bool>,
@@ -66,7 +66,7 @@ impl NewQuestionOption {
 
 #[derive(AsChangeset)]
 #[table_name = "question_options"]
-pub struct QuestionOptionPatch {
+struct QuestionOptionPatch {
     option: Option<String>,
     test_question_id: Option<i32>,
     is_correct: Option<Option<bool>>,
