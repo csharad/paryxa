@@ -27,6 +27,13 @@ impl TestSchedule {
     pub fn find(id: i32, conn: &PgConnection) -> SResult<TestSchedule> {
         Ok(test_schedules::table.find(id).get_result(conn)?)
     }
+
+    pub fn delete_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<TestSchedule> {
+        Ok(
+            diesel::delete(test_schedules::table.filter(test_schedules::uuid.eq(uuid)))
+                .get_result(conn)?,
+        )
+    }
 }
 
 graphql_object!(TestSchedule: () |&self| {

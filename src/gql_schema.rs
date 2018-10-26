@@ -77,6 +77,10 @@ graphql_object!(Mutation: Context | &self | {
     field update_test_schedule(&executor, schedule: TestScheduleUpdate) -> SResult<TestSchedule> {
         schedule.save(&executor.context().conn)
     }
+
+    field delete_test_schedule(&executor, id: Uuid) -> SResult<TestSchedule> {
+        TestSchedule::delete_by_uuid(id, &executor.context().conn)
+    }
 });
 
 pub type Schema = RootNode<'static, Query, Mutation>;
