@@ -102,6 +102,14 @@ impl TestQuestionPatch {
         .get_result(conn)?;
         Ok(id)
     }
+
+    fn save_or_find(self, uuid: Uuid, test_paper_id: i32, conn: &PgConnection) -> SResult<i32> {
+        if self.question.is_some() {
+            self.save(uuid, test_paper_id, conn)
+        } else {
+            Ok(TestQuestion::find_by_uuid_for_test_paper(uuid, test_paper_id, conn)?.id)
+        }
+    }
 }
 
 #[derive(GraphQLInputObject)]
@@ -145,7 +153,7 @@ impl TestQuestionUpdate {
             let quest_patch = TestQuestionPatch {
                 question: quest.question,
             };
-            let question_id = quest_patch.save(quest.id, test_paper_id, conn)?;
+            let question_id = quest_patch.save_or_find(quest.id, test_paper_id, conn)?;
             quest.options.save(question_id, conn)?;
         }
         Ok(())
