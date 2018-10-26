@@ -1,7 +1,7 @@
 use errors::SResult;
 use juniper::RootNode;
 use models::{
-    test_paper::{TestPaper, TestPaperForm},
+    test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
     user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate},
 };
 use uuid::Uuid;
@@ -58,6 +58,10 @@ graphql_object!(Mutation: Context | &self | {
     }
 
     field create_test_paper(&executor, test_paper: TestPaperForm) -> SResult<TestPaper> {
+        test_paper.save(&executor.context().conn)
+    }
+
+    field update_test_paper(&executor, test_paper: TestPaperUpdate) -> SResult<TestPaper> {
         test_paper.save(&executor.context().conn)
     }
 });

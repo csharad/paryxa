@@ -123,6 +123,16 @@ struct TestPaperPatch {
     type_: Option<TestType>,
 }
 
+impl TestPaperPatch {
+    fn save(self, uuid: Uuid, conn: &PgConnection) -> SResult<TestPaper> {
+        Ok(
+            diesel::update(test_papers::table.filter(test_papers::uuid.eq(uuid)))
+                .set(self)
+                .get_result(conn)?,
+        )
+    }
+}
+
 #[derive(GraphQLInputObject)]
 pub struct TestPaperForm {
     name: String,
@@ -143,5 +153,24 @@ impl TestPaperForm {
             TestQuestionForm::save_multiple(self.questions, saved_paper.id, conn)?;
             Ok(saved_paper)
         })
+    }
+}
+
+#[derive(GraphQLInputObject)]
+pub struct TestPaperUpdate {
+    id: Uuid,
+    name: Option<String>,
+    description: Option<Option<String>>,
+    type_: Option<TestType>,
+}
+
+impl TestPaperUpdate {
+    pub fn save(self, conn: &PgConnection) -> SResult<TestPaper> {
+        let paper_patch = TestPaperPatch {
+            name: self.name,
+            description: self.description,
+            type_: self.type_,
+        };
+        paper_patch.save(self.id, conn)
     }
 }
