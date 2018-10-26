@@ -34,12 +34,12 @@ graphql_object!(Mutation: Context | &self | {
         user.save(&executor.context().conn)
     }
 
-    field update_user(&executor, id: Uuid, user: UserInfoUpdate) -> SResult<User> {
-        user.save(id, &executor.context().conn)
+    field update_user(&executor, user: UserInfoUpdate) -> SResult<User> {
+        user.save(&executor.context().conn)
     }
 
-    field update_user_type(&executor, id: Uuid, user_type: UserTypeUpdate) -> SResult<User> {
-        user_type.save(id, &executor.context().conn)
+    field update_user_type(&executor, user_type: UserTypeUpdate) -> SResult<User> {
+        user_type.save(&executor.context().conn)
     }
 
     field delete_user(&executor, id: Uuid) -> SResult<User> {
