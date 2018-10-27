@@ -14,6 +14,7 @@ extern crate juniper;
 extern crate juniper_warp;
 #[macro_use]
 extern crate log;
+extern crate base64;
 extern crate warp;
 
 use diesel::{
@@ -24,6 +25,7 @@ use gql_schema::create_schema;
 use std::env;
 use warp::{filters::BoxedFilter, Filter, Rejection};
 
+mod basic;
 mod db_types;
 mod errors;
 mod gql_schema;
