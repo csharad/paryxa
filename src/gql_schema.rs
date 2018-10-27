@@ -3,7 +3,7 @@ use juniper::RootNode;
 use models::{
     test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
     test_schedule::{TestSchedule, TestScheduleForm, TestScheduleUpdate},
-    user::{User, UserForm, UserInfoUpdate, UserTypeUpdate},
+    user::{User, UserCredentialsUpdate, UserForm, UserInfoUpdate, UserTypeUpdate},
 };
 use uuid::Uuid;
 use Context;
@@ -44,6 +44,12 @@ graphql_object!(Mutation: Context | &self | {
     }
 
     field update_me(&executor, user: UserInfoUpdate) -> SResult<User> {
+        let ctx = executor.context();
+        let auth = ctx.auth_user()?;
+        user.save(auth.uuid, &ctx.conn)
+    }
+
+    field update_my_credentials(&executor, user: UserCredentialsUpdate) -> SResult<User> {
         let ctx = executor.context();
         let auth = ctx.auth_user()?;
         user.save(auth.uuid, &ctx.conn)

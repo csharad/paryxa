@@ -1,4 +1,5 @@
 use super::JoinPatch;
+use basic::BasicUser;
 use bcrypt;
 use db_types::*;
 use diesel::{
@@ -13,7 +14,7 @@ use models::{test_room::TestRoom, test_subscription::TestSubscription};
 use schema::users;
 use std::io::Write;
 use uuid::Uuid;
-use Context;
+use {Context, AUTH_CACHE};
 
 #[derive(Identifiable, Queryable)]
 pub struct User {
@@ -246,12 +247,6 @@ impl UserForm {
 }
 
 #[derive(GraphQLInputObject)]
-struct PasswordUpdate {
-    old_password: String,
-    new_password: String,
-}
-
-#[derive(GraphQLInputObject)]
 pub struct UserInfoUpdate {
     first_name: Option<String>,
     is_first_name_null: Option<bool>,
@@ -261,16 +256,34 @@ pub struct UserInfoUpdate {
     is_gender_null: Option<bool>,
     contact: Option<String>,
     is_contact_null: Option<bool>,
-    email: Option<String>,
-    password: Option<PasswordUpdate>,
 }
 
 impl UserInfoUpdate {
+    pub fn save(self, id: Uuid, conn: &PgConnection) -> SResult<User> {
+        let user_patch = UserPatch {
+            first_name: self.first_name.join(self.is_first_name_null),
+            last_name: self.last_name.join(self.is_last_name_null),
+            gender: self.gender.join(self.is_gender_null),
+            contact: self.contact.join(self.is_contact_null),
+            ..UserPatch::default()
+        };
+        user_patch.save(id, conn)
+    }
+}
+
+#[derive(GraphQLInputObject)]
+pub struct UserCredentialsUpdate {
+    email: Option<String>,
+    new_password: Option<String>,
+    password: String,
+}
+
+impl UserCredentialsUpdate {
     fn hashed_password(&self, uuid: Uuid, conn: &PgConnection) -> SResult<Option<String>> {
-        if let Some(ref password_update) = self.password {
+        if let Some(ref new_password) = self.new_password {
             let user = User::find_by_uuid(uuid, conn)?;
-            verify_user(user, &password_update.old_password)?;
-            let new_hash = bcrypt::hash(&password_update.new_password, bcrypt::DEFAULT_COST)?;
+            verify_user(user, &self.password)?;
+            let new_hash = bcrypt::hash(&new_password, bcrypt::DEFAULT_COST)?;
             Ok(Some(new_hash))
         } else {
             Ok(None)
@@ -278,17 +291,23 @@ impl UserInfoUpdate {
     }
 
     pub fn save(self, id: Uuid, conn: &PgConnection) -> SResult<User> {
-        let password = self.hashed_password(id, conn)?;
+        let password_hash = self.hashed_password(id, conn)?;
         let user_patch = UserPatch {
-            first_name: self.first_name.join(self.is_first_name_null),
-            last_name: self.last_name.join(self.is_last_name_null),
-            gender: self.gender.join(self.is_gender_null),
-            contact: self.contact.join(self.is_contact_null),
             email: self.email,
-            password,
+            password: password_hash,
             ..UserPatch::default()
         };
-        user_patch.save(id, conn)
+        let saved = user_patch.save(id, conn)?;
+
+        // Remove the user from the auth cache as we would not want to
+        // authenticate user using the old email/password.
+        let basic_user = BasicUser {
+            username: saved.email.clone(),
+            password: self.password,
+        };
+        let mut cache = AUTH_CACHE.lock().unwrap();
+        cache.remove(&basic_user);
+        Ok(saved)
     }
 }
 
