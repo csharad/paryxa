@@ -22,6 +22,7 @@ use diesel::{
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
 use gql_schema::create_schema;
+use models::user::{verify_user, User};
 use std::env;
 use warp::{filters::BoxedFilter, Filter, Rejection};
 
@@ -46,6 +47,7 @@ fn pg_pool() -> PgPool {
 
 pub struct Context {
     pub conn: PooledPg,
+    pub user: Option<User>,
 }
 
 impl juniper::Context for Context {}
@@ -58,16 +60,37 @@ pub fn graphiql(
 }
 
 fn graphql_context() -> BoxedFilter<(Context,)> {
-    let pg_pool = pg_pool();
-    warp::any()
-        .and_then(move || match pg_pool.get() {
-            Ok(pooled) => Ok(Context { conn: pooled }),
-            Err(_) => Err(warp::reject::server_error()),
-        }).boxed()
+    pg_conn()
+        .and(basic::basic_optional())
+        .and_then(user_lookup)
+        .map(|(pooled, user)| Context { conn: pooled, user })
+        .boxed()
 }
 
 pub fn graphql(
 ) -> impl Filter<Extract = (warp::http::Response<Vec<u8>>,), Error = Rejection> + Clone {
     let graphql_filter = juniper_warp::make_graphql_filter(create_schema(), graphql_context());
     warp::path("graphql").and(graphql_filter)
+}
+
+fn pg_conn() -> impl Filter<Extract = (PooledPg,), Error = Rejection> + Clone {
+    let pg_pool = pg_pool();
+    warp::any().and_then(move || match pg_pool.get() {
+        Ok(pooled) => Ok(pooled),
+        Err(_) => Err(warp::reject::server_error()),
+    })
+}
+
+fn user_lookup(
+    conn: PooledPg,
+    user: Option<basic::BasicUser>,
+) -> Result<(PooledPg, Option<User>), Rejection> {
+    if let Some(user) = user {
+        let found_user = User::find_by_email(&user.username, &conn)
+            .and_then(|found| verify_user(found, &user.password))
+            .map_err(|_| warp::reject::forbidden())?;
+        Ok((conn, Some(found_user)))
+    } else {
+        Ok((conn, None))
+    }
 }

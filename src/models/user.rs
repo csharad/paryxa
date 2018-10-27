@@ -311,3 +311,11 @@ impl LoginUser {
         }
     }
 }
+
+pub fn verify_user(user: User, password: &str) -> SResult<User> {
+    if bcrypt::verify(password, &user.password)? {
+        Ok(user)
+    } else {
+        Err(Error::IncorrectPassword)
+    }
+}
