@@ -246,6 +246,12 @@ impl UserForm {
 }
 
 #[derive(GraphQLInputObject)]
+struct PasswordUpdate {
+    old_password: String,
+    new_password: String,
+}
+
+#[derive(GraphQLInputObject)]
 pub struct UserInfoUpdate {
     first_name: Option<String>,
     is_first_name_null: Option<bool>,
@@ -256,15 +262,15 @@ pub struct UserInfoUpdate {
     contact: Option<String>,
     is_contact_null: Option<bool>,
     email: Option<String>,
-    password: Option<String>,
+    password: Option<PasswordUpdate>,
 }
 
 impl UserInfoUpdate {
     fn hashed_password(&self, uuid: Uuid, conn: &PgConnection) -> SResult<Option<String>> {
-        if let Some(ref password) = self.password {
+        if let Some(ref password_update) = self.password {
             let user = User::find_by_uuid(uuid, conn)?;
-            verify_user(user, password)?;
-            let new_hash = bcrypt::hash(password, bcrypt::DEFAULT_COST)?;
+            verify_user(user, &password_update.old_password)?;
+            let new_hash = bcrypt::hash(&password_update.new_password, bcrypt::DEFAULT_COST)?;
             Ok(Some(new_hash))
         } else {
             Ok(None)
