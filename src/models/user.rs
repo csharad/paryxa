@@ -302,19 +302,6 @@ impl UserTypeUpdate {
     }
 }
 
-#[derive(GraphQLInputObject)]
-pub struct LoginUser {
-    email: String,
-    password: String,
-}
-
-impl LoginUser {
-    pub fn try_login(self, conn: &PgConnection) -> SResult<User> {
-        let user = User::find_by_email(&self.email, conn)?;
-        verify_user(user, &self.password)
-    }
-}
-
 pub fn verify_user(user: User, password: &str) -> SResult<User> {
     if bcrypt::verify(password, &user.password)? {
         Ok(user)

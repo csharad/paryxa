@@ -3,7 +3,7 @@ use juniper::RootNode;
 use models::{
     test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
     test_schedule::{TestSchedule, TestScheduleForm, TestScheduleUpdate},
-    user::{LoginUser, User, UserForm, UserInfoUpdate, UserTypeUpdate},
+    user::{User, UserForm, UserInfoUpdate, UserTypeUpdate},
 };
 use uuid::Uuid;
 use Context;
