@@ -21,6 +21,7 @@ use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
+use errors::{Error, SResult};
 use gql_schema::create_schema;
 use models::user::{verify_user, User};
 use std::env;
@@ -48,6 +49,12 @@ fn pg_pool() -> PgPool {
 pub struct Context {
     pub conn: PooledPg,
     pub user: Option<User>,
+}
+
+impl Context {
+    fn auth_user(&self) -> SResult<&User> {
+        self.user.as_ref().ok_or(Error::Unauthorized)
+    }
 }
 
 impl juniper::Context for Context {}

@@ -11,6 +11,10 @@ use Context;
 pub struct Query;
 
 graphql_object!(Query: Context | &self | {
+    field me(&executor) -> SResult<&User> {
+        executor.context().auth_user()
+    }
+
     field users(&executor, query: Option<String>) -> SResult<Vec<User>> {
         User::find_all(query, &executor.context().conn)
     }

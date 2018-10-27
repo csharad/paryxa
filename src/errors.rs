@@ -10,6 +10,8 @@ pub enum Error {
     Bcrypt(#[cause] BcryptError),
     #[fail(display = "Password for the user is incorrect.")]
     IncorrectPassword,
+    #[fail(display = "An unauthorized request.")]
+    Unauthorized,
 }
 
 impl From<DieselError> for Error {
@@ -74,6 +76,12 @@ impl IntoFieldError for Error {
                 "Given password was incorrect.",
                 graphql_value!({
                     "kind": "INCORRECT_PASSWORD"
+                }),
+            ),
+            Error::Unauthorized => FieldError::new(
+                "This is an unauthorized request.",
+                graphql_value!({
+                    "kind": "UNAUTHORIZED"
                 }),
             ),
         }
