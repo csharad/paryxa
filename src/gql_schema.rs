@@ -59,17 +59,6 @@ graphql_object!(Mutation: Context | &self | {
         User::delete_by_uuid(user.uuid, &executor.context().conn)
     }
 
-    field login(&executor, user: LoginUser) -> SResult<User> {
-        let user = user.try_login(&executor.context().conn)?;
-        //TODO: Set cookies
-        Ok(user)
-    }
-
-    field logout(&executor) -> &str {
-        //TODO: Remove cookies
-        "Logged out"
-    }
-
     field create_test_paper(&executor, test_paper: TestPaperForm) -> SResult<TestPaper> {
         let ctx = executor.context();
         ctx.admin_only()?;
