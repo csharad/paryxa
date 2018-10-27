@@ -65,6 +65,13 @@ impl User {
         let user = diesel::delete(users::table.filter(users::uuid.eq(uuid))).get_result(conn)?;
         Ok(user)
     }
+
+    pub fn is_admin(&self) -> bool {
+        match self.type_ {
+            UserType::Admin => true,
+            _ => false,
+        }
+    }
 }
 
 graphql_object!(User: Context |&self| {

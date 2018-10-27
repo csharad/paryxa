@@ -55,6 +55,16 @@ impl Context {
     fn auth_user(&self) -> SResult<&User> {
         self.user.as_ref().ok_or(Error::Unauthorized)
     }
+
+    fn admin_only(&self) -> SResult<&User> {
+        self.auth_user().and_then(|user| {
+            if user.is_admin() {
+                Ok(user)
+            } else {
+                Err(Error::Unauthorized)
+            }
+        })
+    }
 }
 
 impl juniper::Context for Context {}

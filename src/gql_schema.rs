@@ -16,11 +16,15 @@ graphql_object!(Query: Context | &self | {
     }
 
     field users(&executor, query: Option<String>) -> SResult<Vec<User>> {
-        User::find_all(query, &executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        User::find_all(query, &ctx.conn)
     }
 
     field user(&executor, id: Uuid) -> SResult<User> {
-        User::find_by_uuid(id, &executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        User::find_by_uuid(id, &ctx.conn)
     }
 
     field test_papers(&executor) -> SResult<Vec<TestPaper>> {
@@ -63,27 +67,39 @@ graphql_object!(Mutation: Context | &self | {
     }
 
     field create_test_paper(&executor, test_paper: TestPaperForm) -> SResult<TestPaper> {
-        test_paper.save(&executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        test_paper.save(&ctx.conn)
     }
 
     field update_test_paper(&executor, test_paper: TestPaperUpdate) -> SResult<TestPaper> {
-        test_paper.save(&executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        test_paper.save(&ctx.conn)
     }
 
     field delete_test_paper(&executor, id: Uuid) -> SResult<TestPaper> {
-        TestPaper::delete_by_uuid(id, &executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        TestPaper::delete_by_uuid(id, &ctx.conn)
     }
 
     field create_test_schedule(&executor, schedule: TestScheduleForm) -> SResult<TestSchedule> {
-        schedule.save(&executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        schedule.save(&ctx.conn)
     }
 
     field update_test_schedule(&executor, schedule: TestScheduleUpdate) -> SResult<TestSchedule> {
-        schedule.save(&executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        schedule.save(&ctx.conn)
     }
 
     field delete_test_schedule(&executor, id: Uuid) -> SResult<TestSchedule> {
-        TestSchedule::delete_by_uuid(id, &executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        TestSchedule::delete_by_uuid(id, &ctx.conn)
     }
 });
 
