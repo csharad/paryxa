@@ -43,16 +43,20 @@ graphql_object!(Mutation: Context | &self | {
         user.save(&executor.context().conn)
     }
 
-    field update_user(&executor, user: UserInfoUpdate) -> SResult<User> {
-        user.save(&executor.context().conn)
+    field update_me(&executor, user: UserInfoUpdate) -> SResult<User> {
+        let ctx = executor.context();
+        let auth = ctx.auth_user()?;
+        user.save(auth.uuid, &ctx.conn)
     }
 
     field update_user_type(&executor, user_type: UserTypeUpdate) -> SResult<User> {
         user_type.save(&executor.context().conn)
     }
 
-    field delete_user(&executor, id: Uuid) -> SResult<User> {
-        User::delete_by_uuid(id, &executor.context().conn)
+    field delete_me(&executor) -> SResult<User> {
+        let ctx = executor.context();
+        let user = ctx.auth_user()?;
+        User::delete_by_uuid(user.uuid, &executor.context().conn)
     }
 
     field login(&executor, user: LoginUser) -> SResult<User> {

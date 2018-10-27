@@ -243,7 +243,6 @@ impl UserForm {
 
 #[derive(GraphQLInputObject)]
 pub struct UserInfoUpdate {
-    id: Uuid,
     first_name: Option<String>,
     is_first_name_null: Option<bool>,
     last_name: Option<String>,
@@ -268,8 +267,8 @@ impl UserInfoUpdate {
         }
     }
 
-    pub fn save(self, conn: &PgConnection) -> SResult<User> {
-        let password = self.hashed_password(self.id, conn)?;
+    pub fn save(self, id: Uuid, conn: &PgConnection) -> SResult<User> {
+        let password = self.hashed_password(id, conn)?;
         let user_patch = UserPatch {
             first_name: self.first_name.join(self.is_first_name_null),
             last_name: self.last_name.join(self.is_last_name_null),
@@ -279,7 +278,7 @@ impl UserInfoUpdate {
             password,
             ..UserPatch::default()
         };
-        user_patch.save(self.id, conn)
+        user_patch.save(id, conn)
     }
 }
 
