@@ -15,8 +15,12 @@ extern crate juniper_warp;
 #[macro_use]
 extern crate log;
 extern crate base64;
+extern crate ttl_cache;
 extern crate warp;
+#[macro_use]
+extern crate lazy_static;
 
+use basic::BasicUser;
 use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
@@ -24,7 +28,8 @@ use diesel::{
 use errors::{Error, SResult};
 use gql_schema::create_schema;
 use models::user::{verify_user, User};
-use std::env;
+use std::{env, sync::Mutex, time::Duration};
+use ttl_cache::TtlCache;
 use warp::{filters::BoxedFilter, Filter, Rejection};
 
 mod basic;
@@ -98,14 +103,36 @@ fn pg_conn() -> impl Filter<Extract = (PooledPg,), Error = Rejection> + Clone {
     })
 }
 
+lazy_static! {
+    static ref AUTH_CACHE: Mutex<TtlCache<BasicUser, i32>> = Mutex::new(TtlCache::new(10000));
+}
+
 fn user_lookup(
     conn: PooledPg,
-    user: Option<basic::BasicUser>,
+    user: Option<BasicUser>,
 ) -> Result<(PooledPg, Option<User>), Rejection> {
     if let Some(user) = user {
+        // Check if the user is already in cache.
+        {
+            let cache = AUTH_CACHE.lock().unwrap();
+            if let Some(&user_id) = cache.get(&user) {
+                let user = User::find(user_id, &conn).map_err(|_| warp::reject::forbidden())?;
+                return Ok((conn, Some(user)));
+            }
+        }
+
+        // Else verify the user.
         let found_user = User::find_by_email(&user.username, &conn)
             .and_then(|found| verify_user(found, &user.password))
             .map_err(|_| warp::reject::forbidden())?;
+
+        // And remember it for the rest of the day as verification is a very
+        // slow process.
+        {
+            let mut cache = AUTH_CACHE.lock().unwrap();
+            cache.insert(user, found_user.id, Duration::from_secs(86400));
+        }
+
         Ok((conn, Some(found_user)))
     } else {
         Ok((conn, None))

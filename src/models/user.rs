@@ -29,6 +29,10 @@ pub struct User {
 }
 
 impl User {
+    pub fn find(id: i32, conn: &PgConnection) -> SResult<User> {
+        Ok(users::table.find(id).get_result(conn)?)
+    }
+
     pub fn find_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<User> {
         let user = users::table.filter(users::uuid.eq(uuid)).get_result(conn)?;
         Ok(user)

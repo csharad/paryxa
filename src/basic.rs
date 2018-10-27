@@ -2,6 +2,7 @@ use base64;
 use warp::{self, Filter, Rejection};
 
 /// A Basic Auth User.
+#[derive(Eq, PartialEq, Hash)]
 pub struct BasicUser {
     pub username: String,
     pub password: String,
