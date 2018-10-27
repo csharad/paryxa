@@ -50,13 +50,15 @@ graphql_object!(Mutation: Context | &self | {
     }
 
     field update_user_type(&executor, user_type: UserTypeUpdate) -> SResult<User> {
-        user_type.save(&executor.context().conn)
+        let ctx = executor.context();
+        ctx.admin_only()?;
+        user_type.save(&ctx.conn)
     }
 
     field delete_me(&executor) -> SResult<User> {
         let ctx = executor.context();
         let user = ctx.auth_user()?;
-        User::delete_by_uuid(user.uuid, &executor.context().conn)
+        User::delete_by_uuid(user.uuid, &ctx.conn)
     }
 
     field create_test_paper(&executor, test_paper: TestPaperForm) -> SResult<TestPaper> {
