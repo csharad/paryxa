@@ -253,12 +253,9 @@ impl UserInfoUpdate {
     fn hashed_password(&self, uuid: Uuid, conn: &PgConnection) -> SResult<Option<String>> {
         if let Some(ref password) = self.password {
             let user = User::find_by_uuid(uuid, conn)?;
-            if bcrypt::verify(password, &user.password)? {
-                let new_hash = bcrypt::hash(password, bcrypt::DEFAULT_COST)?;
-                Ok(Some(new_hash))
-            } else {
-                Err(Error::IncorrectPassword)
-            }
+            verify_user(user, password)?;
+            let new_hash = bcrypt::hash(password, bcrypt::DEFAULT_COST)?;
+            Ok(Some(new_hash))
         } else {
             Ok(None)
         }
@@ -304,11 +301,7 @@ pub struct LoginUser {
 impl LoginUser {
     pub fn try_login(self, conn: &PgConnection) -> SResult<User> {
         let user = User::find_by_email(&self.email, conn)?;
-        if bcrypt::verify(&self.password, &user.password)? {
-            Ok(user)
-        } else {
-            Err(Error::IncorrectPassword)
-        }
+        verify_user(user, &self.password)
     }
 }
 
