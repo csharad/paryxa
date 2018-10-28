@@ -16,7 +16,7 @@ const AuthenticatedUser = ({ children }) => (
         }
     `}>
         {({ loading, error, data }) => {
-            if (errors && error.graphQLErrors[0].extensions.kind === 'UNAUTHENTICATED') {
+            if (error && error.graphQLErrors[0].extensions.kind === 'UNAUTHENTICATED') {
                 return children({ loading, isLogged: false });
             }
             return children({ data, loading, isLogged: true });
