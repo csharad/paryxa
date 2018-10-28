@@ -153,6 +153,12 @@ graphql_object!(Mutation: Context | &self | {
         let user = ctx.auth_user()?;
         TestRoomPatch::leave().save(test_room_id, user.id, &ctx.conn)
     }
+
+    field finish_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> {
+        let ctx = executor.context();
+        let user = ctx.auth_user()?;
+        TestRoomPatch::finish().save(test_room_id, user.id, &ctx.conn)
+    }
 });
 
 pub type Schema = RootNode<'static, Query, Mutation>;

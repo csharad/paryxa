@@ -101,6 +101,13 @@ impl TestRoomPatch {
         }
     }
 
+    pub fn finish() -> TestRoomPatch {
+        TestRoomPatch {
+            finish_time: Some(Utc::now().naive_utc()),
+            has_withdrawn: None,
+        }
+    }
+
     pub fn save(self, test_room_id: Uuid, user_id: i32, conn: &PgConnection) -> SResult<TestRoom> {
         Ok(diesel::update(
             test_rooms::table.filter(
