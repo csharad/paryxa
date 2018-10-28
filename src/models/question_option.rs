@@ -5,11 +5,11 @@ use uuid::Uuid;
 
 #[derive(Identifiable, Queryable)]
 pub struct QuestionOption {
-    id: i32,
-    uuid: Uuid,
-    option: String,
-    test_question_id: i32,
-    is_correct: Option<bool>,
+    pub id: i32,
+    pub uuid: Uuid,
+    pub option: String,
+    pub test_question_id: i32,
+    pub is_correct: Option<bool>,
 }
 
 impl QuestionOption {

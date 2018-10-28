@@ -2,24 +2,37 @@ use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::{self, prelude::*};
 use errors::SResult;
-use models::{test_paper::TestPaper, test_schedule::TestSchedule, question_answer::QuestionAnswer};
+use models::{question_answer::QuestionAnswer, test_paper::TestPaper, test_schedule::TestSchedule};
 use schema::test_attempts;
 use uuid::Uuid;
 use Context;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestAttempt {
-    id: i32,
-    uuid: Uuid,
-    user_id: i32,
-    test_paper_id: i32,
-    test_schedule_id: i32,
-    start_time: NaiveDateTime,
-    finish_time: Option<NaiveDateTime>,
-    has_withdrawn: Option<bool>,
+    pub id: i32,
+    pub uuid: Uuid,
+    pub user_id: i32,
+    pub test_paper_id: i32,
+    pub test_schedule_id: i32,
+    pub start_time: NaiveDateTime,
+    pub finish_time: Option<NaiveDateTime>,
+    pub has_withdrawn: Option<bool>,
 }
 
 impl TestAttempt {
+    pub fn find_by_uuid_for_user(
+        uuid: Uuid,
+        user_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<TestAttempt> {
+        Ok(test_attempts::table
+            .filter(
+                test_attempts::uuid
+                    .eq(uuid)
+                    .and(test_attempts::user_id.eq(user_id)),
+            ).get_result(conn)?)
+    }
+
     pub fn find_for_user(user_id: i32, conn: &PgConnection) -> SResult<Vec<TestAttempt>> {
         Ok(test_attempts::table
             .filter(test_attempts::user_id.eq(user_id))
@@ -112,7 +125,12 @@ impl TestAttemptPatch {
         }
     }
 
-    pub fn save(self, test_room_id: Uuid, user_id: i32, conn: &PgConnection) -> SResult<TestAttempt> {
+    pub fn save(
+        self,
+        test_room_id: Uuid,
+        user_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<TestAttempt> {
         Ok(diesel::update(
             test_attempts::table.filter(
                 test_attempts::uuid

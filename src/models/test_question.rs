@@ -7,10 +7,10 @@ use Context;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestQuestion {
-    id: i32,
-    uuid: Uuid,
-    question: String,
-    test_paper_id: i32,
+    pub id: i32,
+    pub uuid: Uuid,
+    pub question: String,
+    pub test_paper_id: i32,
 }
 
 impl TestQuestion {

@@ -4,7 +4,8 @@ use models::{
     test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
     test_schedule::{TestSchedule, TestScheduleForm, TestScheduleUpdate},
     user::{User, UserCredentialsUpdate, UserForm, UserInfoUpdate, UserTypeUpdate},
-    test_attempt::{StartTest, TestAttempt, TestAttemptPatch}
+    test_attempt::{StartTest, TestAttempt, TestAttemptPatch},
+    question_answer::{ProvideAnswer, QuestionAnswer}
 };
 use uuid::Uuid;
 use Context;
@@ -162,6 +163,14 @@ graphql_object!(Mutation: Context | &self | {
         let ctx = executor.context();
         let user = ctx.auth_user()?;
         TestAttemptPatch::finish().save(test_room_id, user.id, &ctx.conn)
+    }
+
+    field answer_the_question(&executor, answer: ProvideAnswer) -> SResult<QuestionAnswer> 
+        as "Provides an answer to a given question."
+    {
+        let ctx = executor.context();
+        let user = ctx.auth_user()?;
+        answer.save(user.id, &ctx.conn)
     }
 });
 
