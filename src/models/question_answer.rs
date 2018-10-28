@@ -15,6 +15,20 @@ pub struct QuestionAnswer {
 }
 
 impl QuestionAnswer {
+    fn find_optionally_for_attempt_and_question(
+        test_attempt_id: i32,
+        test_question_id: i32,
+        conn: &PgConnection,
+    ) -> SResult<Option<QuestionAnswer>> {
+        Ok(question_answers::table
+            .filter(
+                question_answers::test_attempt_id
+                    .eq(test_attempt_id)
+                    .and(question_answers::test_question_id.eq(test_question_id)),
+            ).get_result(conn)
+            .optional()?)
+    }
+
     pub fn find_all(test_attempt_id: i32, conn: &PgConnection) -> SResult<Vec<QuestionAnswer>> {
         Ok(question_answers::table
             .filter(question_answers::test_attempt_id.eq(test_attempt_id))
@@ -54,6 +68,14 @@ struct QuestionAnswerPatch {
     answered_option: Option<i32>,
 }
 
+impl QuestionAnswerPatch {
+    fn save(self, id: i32, conn: &PgConnection) -> SResult<QuestionAnswer> {
+        Ok(diesel::update(question_answers::table.find(id))
+            .set(self)
+            .get_result(conn)?)
+    }
+}
+
 #[derive(GraphQLInputObject)]
 pub struct ProvideAnswer {
     test_attempt_id: Uuid,
@@ -74,11 +96,21 @@ impl ProvideAnswer {
             question.id,
             conn,
         )?;
-        let new_answer = NewQuestionAnswer {
-            test_attempt_id: attempt.id,
-            test_question_id: question.id,
-            answered_option: option.id,
-        };
-        new_answer.save(conn)
+
+        if let Some(existing_answer) =
+            QuestionAnswer::find_optionally_for_attempt_and_question(attempt.id, question.id, conn)?
+        {
+            let update = QuestionAnswerPatch {
+                answered_option: Some(option.id),
+            };
+            update.save(existing_answer.id, conn)
+        } else {
+            let new_answer = NewQuestionAnswer {
+                test_attempt_id: attempt.id,
+                test_question_id: question.id,
+                answered_option: option.id,
+            };
+            new_answer.save(conn)
+        }
     }
 }
