@@ -13,6 +13,10 @@ pub struct QuestionOption {
 }
 
 impl QuestionOption {
+    pub fn find(id: i32, conn: &PgConnection) -> SResult<QuestionOption> {
+        Ok(question_options::table.find(id).get_result(conn)?)
+    }
+
     pub fn find_all(test_question_id: i32, conn: &PgConnection) -> SResult<Vec<QuestionOption>> {
         Ok(question_options::table
             .filter(question_options::test_question_id.eq(test_question_id))

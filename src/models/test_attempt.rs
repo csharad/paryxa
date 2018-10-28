@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::{self, prelude::*};
 use errors::SResult;
-use models::{test_paper::TestPaper, test_schedule::TestSchedule};
+use models::{test_paper::TestPaper, test_schedule::TestSchedule, question_answer::QuestionAnswer};
 use schema::test_attempts;
 use uuid::Uuid;
 use Context;
@@ -40,6 +40,10 @@ graphql_object!(TestAttempt: Context | &self | {
         as "Test paper being attempted."
     {
         TestPaper::find(self.test_paper_id, &executor.context().conn)
+    }
+
+    field answers(&executor) -> SResult<Vec<QuestionAnswer>> {
+        QuestionAnswer::find_all(self.id, &executor.context().conn)
     }
 
     field test_schedule(&executor) -> SResult<TestSchedule> 
