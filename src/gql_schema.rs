@@ -148,13 +148,17 @@ graphql_object!(Mutation: Context | &self | {
         test.save(user.id, &ctx.conn)
     }
 
-    field leave_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> {
+    field leave_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> 
+        as "Leave the test in between for the authenticated user."
+    {
         let ctx = executor.context();
         let user = ctx.auth_user()?;
         TestRoomPatch::leave().save(test_room_id, user.id, &ctx.conn)
     }
 
-    field finish_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> {
+    field finish_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> 
+        as "Finish the test for the authenticated user."
+    {
         let ctx = executor.context();
         let user = ctx.auth_user()?;
         TestRoomPatch::finish().save(test_room_id, user.id, &ctx.conn)
