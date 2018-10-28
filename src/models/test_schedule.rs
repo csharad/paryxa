@@ -37,19 +37,29 @@ impl TestSchedule {
 }
 
 graphql_object!(TestSchedule: () |&self| {
-    field id() -> Uuid {
+    description: "A type representing a test schedule."
+
+    field id() -> Uuid 
+        as "Id of a test schedule."
+    {
         self.uuid
     }
 
-    field time() -> &NaiveDateTime {
+    field time() -> &NaiveDateTime 
+        as "Time at which a test will start."
+    {
         &self.time
     }
 
-    field duration() -> i32 {
+    field duration() -> i32 
+        as "Duration for which a test will last."
+    {
         self.duration
     }
 
-    field is_happening() -> bool {
+    field is_happening() -> bool 
+        as "Specifies whether a test is currently happening."
+    {
         let now = Utc::now().naive_utc();
         self.time < now && self.time + Duration::seconds(self.duration as i64) > now
     }
@@ -88,10 +98,14 @@ impl TestSchedulePatch {
     }
 }
 
+/// A type to create new schedule for test.
 #[derive(GraphQLInputObject)]
 pub struct TestScheduleForm {
+    /// Id of a test paper.
     test_paper_id: Uuid,
+    /// Time at which the test will start.
     time: NaiveDateTime,
+    /// Duration of the test.
     duration: i32,
 }
 
@@ -107,10 +121,14 @@ impl TestScheduleForm {
     }
 }
 
+/// A type to update the test schedule.
 #[derive(GraphQLInputObject)]
 pub struct TestScheduleUpdate {
+    /// Id of a test schedule.
     id: Uuid,
+    /// New time at which the test will start.
     time: Option<NaiveDateTime>,
+    /// New duration of the test.
     duration: Option<i32>,
 }
 

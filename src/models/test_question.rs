@@ -50,19 +50,29 @@ impl TestQuestion {
 }
 
 graphql_object!(TestQuestion: Context |&self| {
-    field id() -> Uuid {
+    description: "A type representing a test question."
+
+    field id() -> Uuid 
+        as "Id of a question."
+    {
         self.uuid
     }
 
-    field question() -> &str {
+    field question() -> &str 
+        as "The actual question."
+    {
         &self.question
     }
 
-    field options(&executor) -> SResult<Vec<QuestionOption>> {
+    field options(&executor) -> SResult<Vec<QuestionOption>> 
+        as "Options of a question."
+    {
         QuestionOption::find_all(self.id, &executor.context().conn)
     }
 
-    field option(&executor, id: Uuid) -> SResult<QuestionOption> {
+    field option(&executor, id: Uuid) -> SResult<QuestionOption> 
+        as "Option of a question with the given id."
+    {
         QuestionOption::find_by_uuid_for_test_question(id, self.id, &executor.context().conn)
     }
 });
@@ -112,9 +122,12 @@ impl TestQuestionPatch {
     }
 }
 
+/// A type to create new test question.
 #[derive(GraphQLInputObject)]
 pub struct TestQuestionForm {
+    /// Question text.
     question: String,
+    /// List of options for this question.
     options: Vec<QuestionOptionForm>,
 }
 
@@ -136,10 +149,14 @@ impl TestQuestionForm {
     }
 }
 
+/// A type to update a test question.
 #[derive(GraphQLInputObject)]
 struct TestQuestionUpdate {
+    /// Id of a test question.
     id: Uuid,
+    /// New question text.
     question: Option<String>,
+    /// Update type for options.
     options: QuestionOptionsUpdate,
 }
 
@@ -160,10 +177,14 @@ impl TestQuestionUpdate {
     }
 }
 
+/// A type to update questions.
 #[derive(GraphQLInputObject)]
 pub struct TestQuestionsUpdate {
+    /// List of new questions.
     new: Vec<TestQuestionForm>,
+    /// List of updated questions.
     update: Vec<TestQuestionUpdate>,
+    /// List of ids to delete older questions.
     remove: Vec<Uuid>,
 }
 

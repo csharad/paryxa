@@ -80,47 +80,68 @@ impl User {
 }
 
 graphql_object!(User: Context |&self| {
-    field id() -> Uuid {
+    description: "A type representing a user."
+
+    field id() -> Uuid
+         as "Id of a user." 
+    {
         self.uuid
     }
 
-    field first_name() -> &Option<String> {
+    field first_name() -> &Option<String>
+         as "First name of a user." 
+    {
         &self.first_name
     }
 
-    field last_name() -> &Option<String> {
+    field last_name() -> &Option<String>
+         as "Last name of a user." 
+    {
         &self.last_name
     }
 
-    field email() -> &str {
+    field email() -> &str
+         as "Email of a user." 
+    {
         &self.email
     }
 
-    field gender() -> &Option<Gender> {
+    field gender() -> &Option<Gender>
+         as "Gender of a user." 
+    {
         &self.gender
     }
 
-    field contact() -> &Option<String> {
+    field contact() -> &Option<String>
+         as "Contact number of a user." 
+    {
         &self.contact
     }
 
-    field type() -> &UserType {
+    field type() -> &UserType
+         as "Type of a user. It represents the privileges the user has." 
+    {
         &self.type_
     }
 
-    field test_subscriptions(&executor) -> SResult<Vec<TestSubscription>> {
+    field test_subscriptions(&executor) -> SResult<Vec<TestSubscription>> 
+        as "Tests a user has subscribed to." 
+    {
         let ctx = executor.context();
         ctx.me_only(self.id)?;
         TestSubscription::find_all_for_user(self.id, &ctx.conn)
     }
 
-    field test_rooms(&executor) -> SResult<Vec<TestRoom>> {
+    field test_rooms(&executor) -> SResult<Vec<TestRoom>> 
+        as "Tests a user has taken." 
+    {
         let ctx = executor.context();
         ctx.me_only(self.id)?;
         TestRoom::find_for_user(self.id, &ctx.conn)
     }
 });
 
+/// Gender of a user.
 #[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
 #[sql_type = "Gender_type"]
 pub enum Gender {
@@ -152,6 +173,7 @@ impl ToSql<Gender_type, Pg> for Gender {
     }
 }
 
+/// Type of a user.
 #[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
 #[sql_type = "User_type"]
 pub enum UserType {
@@ -228,9 +250,12 @@ impl UserPatch {
     }
 }
 
+/// A type to create a new user.
 #[derive(GraphQLInputObject)]
 pub struct UserForm {
+    /// Email of a new user.
     email: String,
+    /// Password of a new user.
     password: String,
 }
 
@@ -250,15 +275,24 @@ impl UserForm {
     }
 }
 
+/// A type to update the basic information of a user.
 #[derive(GraphQLInputObject)]
 pub struct UserInfoUpdate {
+    /// First name of a user.
     first_name: Option<String>,
+    /// Whether the first name is null.
     is_first_name_null: Option<bool>,
+    /// Last name of a user.
     last_name: Option<String>,
+    /// Whether the last name is null.
     is_last_name_null: Option<bool>,
+    /// Gender of a user.
     gender: Option<Gender>,
+    /// Whether the gender is null.
     is_gender_null: Option<bool>,
+    /// Contact number of a user.
     contact: Option<String>,
+    /// Whether the contact number is null.
     is_contact_null: Option<bool>,
 }
 
@@ -275,10 +309,14 @@ impl UserInfoUpdate {
     }
 }
 
+/// A type to update the credentials of a user.
 #[derive(GraphQLInputObject)]
 pub struct UserCredentialsUpdate {
+    /// Email of a user.
     email: Option<String>,
+    /// New password of a user.
     new_password: Option<String>,
+    /// Current password of user.
     password: String,
 }
 
@@ -315,9 +353,12 @@ impl UserCredentialsUpdate {
     }
 }
 
+/// A type to update the user type for a user.
 #[derive(GraphQLInputObject)]
 pub struct UserTypeUpdate {
+    /// Id of an existing user.
     id: Uuid,
+    /// Type of a user.
     type_: Option<UserType>,
 }
 

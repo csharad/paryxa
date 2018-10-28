@@ -27,27 +27,41 @@ impl TestRoom {
 }
 
 graphql_object!(TestRoom: Context | &self | {
-    field id() -> Uuid {
+    description: "A type representing a test attempt by a user."
+
+    field id() -> Uuid 
+        as "Id of a test room."
+    {
         self.uuid
     }
 
-    field test_paper(&executor) -> SResult<TestPaper> {
+    field test_paper(&executor) -> SResult<TestPaper> 
+        as "Test paper being attempted."
+    {
         TestPaper::find(self.test_paper_id, &executor.context().conn)
     }
 
-    field test_schedule(&executor) -> SResult<TestSchedule> {
+    field test_schedule(&executor) -> SResult<TestSchedule> 
+        as "Schedule of a test attempt."
+    {
         TestSchedule::find(self.test_schedule_id, &executor.context().conn)
     }
 
-    field start_time() -> &NaiveDateTime {
+    field start_time() -> &NaiveDateTime 
+        as "When was a test started."
+    {
         &self.start_time
     }
 
-    field finish_time() -> &Option<NaiveDateTime> {
+    field finish_time() -> &Option<NaiveDateTime> 
+        as "When was a test finished."
+    {
         &self.finish_time
     }
 
-    field has_withdrawn() -> Option<bool> {
+    field has_withdrawn() -> Option<bool> 
+        as "Specified whether a test was withdrawn."
+    {
         self.has_withdrawn
     }
 });

@@ -49,15 +49,23 @@ impl QuestionOption {
 }
 
 graphql_object!(QuestionOption: () | &self | {
-    field id() -> Uuid {
+    description: "A type representing an option."
+
+    field id() -> Uuid 
+        as "Id of a question."
+    {
         self.uuid
     }
 
-    field option() -> &str {
+    field option() -> &str 
+        as "The actual option."
+    {
         &self.option
     }
 
-    field is_correct() -> Option<bool> {
+    field is_correct() -> Option<bool> 
+        as "Specifies whether an option is correct."
+    {
         self.is_correct
     }
 });
@@ -100,9 +108,12 @@ impl QuestionOptionPatch {
     }
 }
 
+/// A type to create new option.
 #[derive(GraphQLInputObject)]
 pub struct QuestionOptionForm {
+    /// Option text.
     option: String,
+    /// Specifies whether this option is correct.
     is_correct: Option<bool>,
 }
 
@@ -124,10 +135,14 @@ impl QuestionOptionForm {
     }
 }
 
+/// A type to update an option for a question.
 #[derive(GraphQLInputObject)]
 struct QuestionOptionUpdate {
+    /// Id of an option.
     id: Uuid,
+    /// New option text.
     option: Option<String>,
+    /// Specifies whether an option is correct.
     is_correct: Option<Option<bool>>,
 }
 
@@ -148,10 +163,14 @@ impl QuestionOptionUpdate {
     }
 }
 
+/// A type to update options for a question.
 #[derive(GraphQLInputObject)]
 pub struct QuestionOptionsUpdate {
+    /// List of new options.
     new: Vec<QuestionOptionForm>,
+    /// List of updates for options.
     update: Vec<QuestionOptionUpdate>,
+    /// List of ids to delete options.
     remove: Vec<Uuid>,
 }
 

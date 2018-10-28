@@ -23,15 +23,23 @@ impl TestSubscription {
 }
 
 graphql_object!(TestSubscription: Context | &self | {
-    field id() -> Uuid {
+    description: "A type representing a test subscription."
+
+    field id() -> Uuid 
+        as "Id of a test subscription."
+    {
         self.uuid
     }
 
-    field test_paper(&executor) -> SResult<TestPaper> {
+    field test_paper(&executor) -> SResult<TestPaper> 
+        as "The test paper which is subscribed."
+    {
         TestPaper::find(self.test_paper_id, &executor.context().conn)
     }
 
-    field test_schedule(&executor) -> SResult<TestSchedule> {
+    field test_schedule(&executor) -> SResult<TestSchedule> 
+        as "The schedule of the test which is subscribed."
+    {
         TestSchedule::find(self.test_schedule_id, &executor.context().conn)
     }
 });

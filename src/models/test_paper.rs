@@ -49,35 +49,52 @@ impl TestPaper {
 }
 
 graphql_object!(TestPaper: Context |&self| {
-    field id() -> Uuid {
+    description: "A type representing a test paper."
+
+    field id() -> Uuid
+        as "Id of a test paper."
+    {
         self.uuid
     }
 
-    field name() -> &str {
+    field name() -> &str 
+        as "Name of a test paper."
+    {
         &self.name
     }
 
-    field description() -> &Option<String> {
+    field description() -> &Option<String> 
+        as "Description of a test paper."
+    {
         &self.description
     }
 
-    field type() -> &TestType {
+    field type() -> &TestType 
+        as "Type of a test paper."
+    {
         &self.type_
     }
 
-    field questions(&executor) -> SResult<Vec<TestQuestion>> {
+    field questions(&executor) -> SResult<Vec<TestQuestion>> 
+        as "Questions of a test paper."
+    {
         TestQuestion::find_all(self.id, &executor.context().conn)
     }
 
-    field question(&executor, id: Uuid) -> SResult<TestQuestion> {
+    field question(&executor, id: Uuid) -> SResult<TestQuestion> 
+        as "Question of a test paper with the given id."
+    {
         TestQuestion::find_by_uuid_for_test_paper(id, self.id, &executor.context().conn)
     }
 
-    field test_schedules(&executor) -> SResult<Vec<TestSchedule>> {
+    field test_schedules(&executor) -> SResult<Vec<TestSchedule>> 
+        as "Schedules of a test paper."
+    {
         TestSchedule::find_all_for_test_paper(self.id, &executor.context().conn)
     }
 });
 
+/// Type of a test.
 #[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
 #[sql_type = "Test_type"]
 pub enum TestType {
@@ -159,11 +176,16 @@ impl TestPaperPatch {
     }
 }
 
+/// A type to create new test paper.
 #[derive(GraphQLInputObject)]
 pub struct TestPaperForm {
+    /// Name of a test paper.
     name: String,
+    /// Description of a test paper. 
     description: Option<String>,
+    /// Type of a test paper.
     type_: TestType,
+    /// Questions in this test paper.
     questions: Vec<TestQuestionForm>,
 }
 
@@ -182,12 +204,18 @@ impl TestPaperForm {
     }
 }
 
+/// A type to update test paper.
 #[derive(GraphQLInputObject)]
 pub struct TestPaperUpdate {
+    /// Id of a test paper.
     id: Uuid,
+    /// New name of a test paper.
     name: Option<String>,
+    /// New description of a test paper.
     description: Option<Option<String>>,
+    /// New type of a test paper.
     type_: Option<TestType>,
+    /// Value to update questions of this test.
     questions: TestQuestionsUpdate,
 }
 
