@@ -4,7 +4,7 @@ use models::{
     test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
     test_schedule::{TestSchedule, TestScheduleForm, TestScheduleUpdate},
     user::{User, UserCredentialsUpdate, UserForm, UserInfoUpdate, UserTypeUpdate},
-    test_room::{StartTest, TestRoom}
+    test_room::{StartTest, TestRoom, TestRoomPatch}
 };
 use uuid::Uuid;
 use Context;
@@ -143,9 +143,15 @@ graphql_object!(Mutation: Context | &self | {
     field start_test(&executor, test: StartTest) -> SResult<TestRoom> 
         as "Start the test for the authenticated user."
     {
-        let ctx= executor.context();
+        let ctx = executor.context();
         let user = ctx.auth_user()?;
         test.save(user.id, &ctx.conn)
+    }
+
+    field leave_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> {
+        let ctx = executor.context();
+        let user = ctx.auth_user()?;
+        TestRoomPatch::leave().save(test_room_id, user.id, &ctx.conn)
     }
 });
 

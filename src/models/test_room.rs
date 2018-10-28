@@ -1,11 +1,11 @@
 use chrono::NaiveDateTime;
+use chrono::Utc;
 use diesel::{self, prelude::*};
 use errors::SResult;
 use models::{test_paper::TestPaper, test_schedule::TestSchedule};
 use schema::test_rooms;
 use uuid::Uuid;
 use Context;
-use chrono::Utc;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestRoom {
@@ -80,15 +80,37 @@ struct NewTestRoom {
 
 impl NewTestRoom {
     fn save(self, conn: &PgConnection) -> SResult<TestRoom> {
-        Ok(diesel::insert_into(test_rooms::table).values(self).get_result(conn)?)
+        Ok(diesel::insert_into(test_rooms::table)
+            .values(self)
+            .get_result(conn)?)
     }
 }
 
 #[derive(AsChangeset)]
 #[table_name = "test_rooms"]
-struct TestRoomPatch {
+pub struct TestRoomPatch {
     finish_time: Option<NaiveDateTime>,
     has_withdrawn: Option<bool>,
+}
+
+impl TestRoomPatch {
+    pub fn leave() -> TestRoomPatch {
+        TestRoomPatch {
+            finish_time: Some(Utc::now().naive_utc()),
+            has_withdrawn: Some(true),
+        }
+    }
+
+    pub fn save(self, test_room_id: Uuid, user_id: i32, conn: &PgConnection) -> SResult<TestRoom> {
+        Ok(diesel::update(
+            test_rooms::table.filter(
+                test_rooms::uuid
+                    .eq(test_room_id)
+                    .and(test_rooms::user_id.eq(user_id)),
+            ),
+        ).set(self)
+        .get_result(conn)?)
+    }
 }
 
 /// A type to start a test.
