@@ -1,4 +1,4 @@
-CREATE TABLE test_rooms (
+CREATE TABLE test_attempts (
     id SERIAL PRIMARY KEY,
     uuid UUID UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
     user_id INT NOT NULL,

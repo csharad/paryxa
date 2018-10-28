@@ -4,7 +4,7 @@ table! {
 
     question_answers (id) {
         id -> Int4,
-        test_room_id -> Int4,
+        test_attempt_id -> Int4,
         test_question_id -> Int4,
         answered_option -> Int4,
     }
@@ -20,6 +20,22 @@ table! {
         option -> Text,
         test_question_id -> Int4,
         is_correct -> Nullable<Bool>,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use db_types::*;
+
+    test_attempts (id) {
+        id -> Int4,
+        uuid -> Uuid,
+        user_id -> Int4,
+        test_paper_id -> Int4,
+        test_schedule_id -> Int4,
+        start_time -> Timestamp,
+        finish_time -> Nullable<Timestamp>,
+        has_withdrawn -> Nullable<Bool>,
     }
 }
 
@@ -46,22 +62,6 @@ table! {
         uuid -> Uuid,
         question -> Text,
         test_paper_id -> Int4,
-    }
-}
-
-table! {
-    use diesel::sql_types::*;
-    use db_types::*;
-
-    test_rooms (id) {
-        id -> Int4,
-        uuid -> Uuid,
-        user_id -> Int4,
-        test_paper_id -> Int4,
-        test_schedule_id -> Int4,
-        start_time -> Timestamp,
-        finish_time -> Nullable<Timestamp>,
-        has_withdrawn -> Nullable<Bool>,
     }
 }
 
@@ -110,8 +110,8 @@ table! {
 }
 
 joinable!(question_answers -> question_options (answered_option));
+joinable!(question_answers -> test_attempts (test_attempt_id));
 joinable!(question_answers -> test_questions (test_question_id));
-joinable!(question_answers -> test_rooms (test_room_id));
 joinable!(question_options -> test_questions (test_question_id));
 joinable!(test_questions -> test_papers (test_paper_id));
 joinable!(test_schedules -> test_papers (test_paper_id));
@@ -122,9 +122,9 @@ joinable!(test_subscriptions -> users (user_id));
 allow_tables_to_appear_in_same_query!(
     question_answers,
     question_options,
+    test_attempts,
     test_papers,
     test_questions,
-    test_rooms,
     test_schedules,
     test_subscriptions,
     users,

@@ -4,7 +4,7 @@ use models::{
     test_paper::{TestPaper, TestPaperForm, TestPaperUpdate},
     test_schedule::{TestSchedule, TestScheduleForm, TestScheduleUpdate},
     user::{User, UserCredentialsUpdate, UserForm, UserInfoUpdate, UserTypeUpdate},
-    test_room::{StartTest, TestRoom, TestRoomPatch}
+    test_attempt::{StartTest, TestAttempt, TestAttemptPatch}
 };
 use uuid::Uuid;
 use Context;
@@ -140,7 +140,7 @@ graphql_object!(Mutation: Context | &self | {
         TestSchedule::delete_by_uuid(id, &ctx.conn)
     }
 
-    field start_test(&executor, test: StartTest) -> SResult<TestRoom> 
+    field start_test(&executor, test: StartTest) -> SResult<TestAttempt> 
         as "Start the test for the authenticated user."
     {
         let ctx = executor.context();
@@ -148,20 +148,20 @@ graphql_object!(Mutation: Context | &self | {
         test.save(user.id, &ctx.conn)
     }
 
-    field leave_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> 
+    field leave_test(&executor, test_room_id: Uuid) -> SResult<TestAttempt> 
         as "Leave the test in between for the authenticated user."
     {
         let ctx = executor.context();
         let user = ctx.auth_user()?;
-        TestRoomPatch::leave().save(test_room_id, user.id, &ctx.conn)
+        TestAttemptPatch::leave().save(test_room_id, user.id, &ctx.conn)
     }
 
-    field finish_test(&executor, test_room_id: Uuid) -> SResult<TestRoom> 
+    field finish_test(&executor, test_room_id: Uuid) -> SResult<TestAttempt> 
         as "Finish the test for the authenticated user."
     {
         let ctx = executor.context();
         let user = ctx.auth_user()?;
-        TestRoomPatch::finish().save(test_room_id, user.id, &ctx.conn)
+        TestAttemptPatch::finish().save(test_room_id, user.id, &ctx.conn)
     }
 });
 

@@ -2,7 +2,7 @@ pub mod question_answer;
 pub mod question_option;
 pub mod test_paper;
 pub mod test_question;
-pub mod test_room;
+pub mod test_attempt;
 pub mod test_schedule;
 pub mod test_subscription;
 pub mod user;

@@ -3,12 +3,12 @@ use chrono::Utc;
 use diesel::{self, prelude::*};
 use errors::SResult;
 use models::{test_paper::TestPaper, test_schedule::TestSchedule};
-use schema::test_rooms;
+use schema::test_attempts;
 use uuid::Uuid;
 use Context;
 
 #[derive(Identifiable, Queryable)]
-pub struct TestRoom {
+pub struct TestAttempt {
     id: i32,
     uuid: Uuid,
     user_id: i32,
@@ -19,19 +19,19 @@ pub struct TestRoom {
     has_withdrawn: Option<bool>,
 }
 
-impl TestRoom {
-    pub fn find_for_user(user_id: i32, conn: &PgConnection) -> SResult<Vec<TestRoom>> {
-        Ok(test_rooms::table
-            .filter(test_rooms::user_id.eq(user_id))
+impl TestAttempt {
+    pub fn find_for_user(user_id: i32, conn: &PgConnection) -> SResult<Vec<TestAttempt>> {
+        Ok(test_attempts::table
+            .filter(test_attempts::user_id.eq(user_id))
             .load(conn)?)
     }
 }
 
-graphql_object!(TestRoom: Context | &self | {
+graphql_object!(TestAttempt: Context | &self | {
     description: "A type representing a test attempt by a user."
 
     field id() -> Uuid 
-        as "Id of a test room."
+        as "Id of a test attempt."
     {
         self.uuid
     }
@@ -68,8 +68,8 @@ graphql_object!(TestRoom: Context | &self | {
 });
 
 #[derive(Insertable)]
-#[table_name = "test_rooms"]
-struct NewTestRoom {
+#[table_name = "test_attempts"]
+struct NewTestAttempt {
     user_id: i32,
     test_paper_id: i32,
     test_schedule_id: i32,
@@ -78,42 +78,42 @@ struct NewTestRoom {
     has_withdrawn: Option<bool>,
 }
 
-impl NewTestRoom {
-    fn save(self, conn: &PgConnection) -> SResult<TestRoom> {
-        Ok(diesel::insert_into(test_rooms::table)
+impl NewTestAttempt {
+    fn save(self, conn: &PgConnection) -> SResult<TestAttempt> {
+        Ok(diesel::insert_into(test_attempts::table)
             .values(self)
             .get_result(conn)?)
     }
 }
 
 #[derive(AsChangeset)]
-#[table_name = "test_rooms"]
-pub struct TestRoomPatch {
+#[table_name = "test_attempts"]
+pub struct TestAttemptPatch {
     finish_time: Option<NaiveDateTime>,
     has_withdrawn: Option<bool>,
 }
 
-impl TestRoomPatch {
-    pub fn leave() -> TestRoomPatch {
-        TestRoomPatch {
+impl TestAttemptPatch {
+    pub fn leave() -> TestAttemptPatch {
+        TestAttemptPatch {
             finish_time: Some(Utc::now().naive_utc()),
             has_withdrawn: Some(true),
         }
     }
 
-    pub fn finish() -> TestRoomPatch {
-        TestRoomPatch {
+    pub fn finish() -> TestAttemptPatch {
+        TestAttemptPatch {
             finish_time: Some(Utc::now().naive_utc()),
             has_withdrawn: None,
         }
     }
 
-    pub fn save(self, test_room_id: Uuid, user_id: i32, conn: &PgConnection) -> SResult<TestRoom> {
+    pub fn save(self, test_room_id: Uuid, user_id: i32, conn: &PgConnection) -> SResult<TestAttempt> {
         Ok(diesel::update(
-            test_rooms::table.filter(
-                test_rooms::uuid
+            test_attempts::table.filter(
+                test_attempts::uuid
                     .eq(test_room_id)
-                    .and(test_rooms::user_id.eq(user_id)),
+                    .and(test_attempts::user_id.eq(user_id)),
             ),
         ).set(self)
         .get_result(conn)?)
@@ -130,10 +130,10 @@ pub struct StartTest {
 }
 
 impl StartTest {
-    pub fn save(self, user_id: i32, conn: &PgConnection) -> SResult<TestRoom> {
+    pub fn save(self, user_id: i32, conn: &PgConnection) -> SResult<TestAttempt> {
         let test_paper = TestPaper::find_by_uuid(self.test_paper_id, conn)?;
         let test_schedule = TestSchedule::find_by_uuid(self.test_schedule_id, conn)?;
-        let new_test = NewTestRoom {
+        let new_test = NewTestAttempt {
             user_id,
             test_paper_id: test_paper.id,
             test_schedule_id: test_schedule.id,
