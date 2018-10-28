@@ -1,10 +1,11 @@
 use chrono::NaiveDateTime;
-use diesel::prelude::*;
+use diesel::{self, prelude::*};
 use errors::SResult;
 use models::{test_paper::TestPaper, test_schedule::TestSchedule};
 use schema::test_rooms;
 use uuid::Uuid;
 use Context;
+use chrono::Utc;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestRoom {
@@ -77,9 +78,40 @@ struct NewTestRoom {
     has_withdrawn: Option<bool>,
 }
 
+impl NewTestRoom {
+    fn save(self, conn: &PgConnection) -> SResult<TestRoom> {
+        Ok(diesel::insert_into(test_rooms::table).values(self).get_result(conn)?)
+    }
+}
+
 #[derive(AsChangeset)]
 #[table_name = "test_rooms"]
 struct TestRoomPatch {
     finish_time: Option<NaiveDateTime>,
     has_withdrawn: Option<bool>,
+}
+
+/// A type to start a test.
+#[derive(GraphQLInputObject)]
+pub struct StartTest {
+    /// Id of a test paper.
+    test_paper_id: Uuid,
+    /// Id of a test schedule.
+    test_schedule_id: Uuid,
+}
+
+impl StartTest {
+    pub fn save(self, user_id: i32, conn: &PgConnection) -> SResult<TestRoom> {
+        let test_paper = TestPaper::find_by_uuid(self.test_paper_id, conn)?;
+        let test_schedule = TestSchedule::find_by_uuid(self.test_schedule_id, conn)?;
+        let new_test = NewTestRoom {
+            user_id,
+            test_paper_id: test_paper.id,
+            test_schedule_id: test_schedule.id,
+            start_time: Utc::now().naive_utc(),
+            finish_time: None,
+            has_withdrawn: None,
+        };
+        new_test.save(conn)
+    }
 }

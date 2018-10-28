@@ -7,11 +7,11 @@ use uuid::Uuid;
 
 #[derive(Identifiable, Queryable)]
 pub struct TestSchedule {
-    id: i32,
-    uuid: Uuid,
-    test_paper_id: i32,
-    time: NaiveDateTime,
-    duration: i32,
+    pub id: i32,
+    pub uuid: Uuid,
+    pub test_paper_id: i32,
+    pub time: NaiveDateTime,
+    pub duration: i32,
 }
 
 impl TestSchedule {
@@ -26,6 +26,10 @@ impl TestSchedule {
 
     pub fn find(id: i32, conn: &PgConnection) -> SResult<TestSchedule> {
         Ok(test_schedules::table.find(id).get_result(conn)?)
+    }
+
+    pub fn find_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<TestSchedule> {
+        Ok(test_schedules::table.filter(test_schedules::uuid.eq(uuid)).get_result(conn)?)
     }
 
     pub fn delete_by_uuid(uuid: Uuid, conn: &PgConnection) -> SResult<TestSchedule> {
