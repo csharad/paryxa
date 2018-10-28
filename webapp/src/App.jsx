@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { AppBar, Toolbar, Typography, CssBaseline, Button, withStyles, createMuiTheme, MuiThemeProvider, colors } from '@material-ui/core';
-import { Route, Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { CssBaseline, createMuiTheme, MuiThemeProvider, colors } from '@material-ui/core';
+import { Route } from 'react-router-dom';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
+import NavigationBar from './NavigationBar';
 import Home from './Home';
 import Login from './Login';
 import SignUp from './SignUp';
@@ -18,7 +18,7 @@ import Dashboard from './Dashboard';
 import Settings from './Settings';
 
 const apolloClient = new ApolloClient({
-    uri: 'http://localhost:4000/graphql',
+    uri: '/graphql',
 });
 
 const theme = createMuiTheme({
@@ -30,36 +30,13 @@ const theme = createMuiTheme({
     }
 });
 
-const styles = {
-    grow: {
-        flexGrow: 1
-    }
-};
-
 class App extends Component {
-    static propTypes = {
-        classes: PropTypes.object.isRequired,
-    };
-
     render() {
-        const { classes } = this.props;
-
         return (
             <ApolloProvider client={apolloClient}>
                 <MuiThemeProvider theme={theme}>
                     <CssBaseline></CssBaseline>
-
-                    <AppBar position="sticky">
-                        <Toolbar>
-                            <Typography variant="h6" color="inherit" className={classes.grow}>
-                                Paryksa
-                            </Typography>
-
-                            <Button color="inherit" component={Link} to="/login">Login</Button>
-
-                            <Button color="inherit" component={Link} to="/signup">Sign Up</Button>
-                        </Toolbar>
-                    </AppBar>
+                    <NavigationBar></NavigationBar>
 
                     <Route path="/" component={Home}></Route>
                     <Route path="/login" component={Login}></Route>
@@ -79,4 +56,4 @@ class App extends Component {
     }
 }
 
-export default withStyles(styles)(App);
+export default App;
