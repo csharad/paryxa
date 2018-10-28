@@ -109,11 +109,15 @@ graphql_object!(User: Context |&self| {
     }
 
     field test_subscriptions(&executor) -> SResult<Vec<TestSubscription>> {
-        TestSubscription::find_all_for_user(self.id, &executor.context().conn)
+        let ctx = executor.context();
+        ctx.me_only(self.id)?;
+        TestSubscription::find_all_for_user(self.id, &ctx.conn)
     }
 
     field test_rooms(&executor) -> SResult<Vec<TestRoom>> {
-        TestRoom::find_for_user(self.id, &executor.context().conn)
+        let ctx = executor.context();
+        ctx.me_only(self.id)?;
+        TestRoom::find_for_user(self.id, &ctx.conn)
     }
 });
 

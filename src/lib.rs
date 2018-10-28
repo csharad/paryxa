@@ -70,6 +70,16 @@ impl Context {
             }
         })
     }
+
+    fn me_only(&self, id: i32) -> SResult<&User> {
+        self.auth_user().and_then(|user| {
+            if user.id == id {
+                Ok(user)
+            } else {
+                Err(Error::Unauthorized)
+            }
+        })
+    }
 }
 
 impl juniper::Context for Context {}
