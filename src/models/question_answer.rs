@@ -37,11 +37,17 @@ impl QuestionAnswer {
 }
 
 graphql_object!(QuestionAnswer: Context | &self | {
-    field question(&executor) -> SResult<TestQuestion> {
+    description: "A type representing an answer to a question."
+
+    field question(&executor) -> SResult<TestQuestion> 
+        as "Question to which this answer answers."
+    {
         TestQuestion::find(self.test_question_id, &executor.context().conn)
     }
 
-    field answered_option(&executor) -> SResult<QuestionOption> {
+    field answered_option(&executor) -> SResult<QuestionOption> 
+        as "The selected option which is an answer."
+    {
         QuestionOption::find(self.answered_option, &executor.context().conn)
     }
 });
@@ -76,10 +82,14 @@ impl QuestionAnswerPatch {
     }
 }
 
+/// A type to provide an answer to a test question.
 #[derive(GraphQLInputObject)]
 pub struct ProvideAnswer {
+    /// Id of a test attempt.
     test_attempt_id: Uuid,
+    /// Id of a question.
     test_question_id: Uuid,
+    /// Id of an answered option to the question.
     answered_option: Uuid,
 }
 
