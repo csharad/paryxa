@@ -1,14 +1,17 @@
 import React, { Component, Fragment } from 'react';
-import { AppBar, Toolbar, Typography, Button, withStyles } from '@material-ui/core';
+import { AppBar, Toolbar, Typography, Button, withStyles, IconButton, Icon } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import AuthenticatedUser from './AuthenticatedUser';
 
-const styles = {
+const styles = theme => ({
     grow: {
         flexGrow: 1
+    },
+    profileIcon: {
+        marginRight: theme.spacing.unit
     }
-};
+});
 
 class NavigationBar extends Component {
     static propTypes = {
@@ -20,17 +23,25 @@ class NavigationBar extends Component {
 
         return (
             <AuthenticatedUser>
-                {({ isLogged }) => {
+                {({ data }) => {
                     return (
                         <AppBar position="sticky">
                             <Toolbar>
                                 <Typography variant="h6" color="inherit" className={classes.grow}>
                                     Paryksa
                                 </Typography>
-
                                 {
-                                    isLogged ?
-                                        ''
+                                    data ?
+                                        <Fragment>
+                                            <Button
+                                                color="inherit"
+                                                component={Link}
+                                                to="/profile"
+                                            >
+                                                <Icon className={classes.profileIcon}>account_circle</Icon>
+                                                Profile
+                                            </Button>
+                                        </Fragment>
                                         :
                                         <Fragment>
                                             <Button color="inherit" component={Link} to="/login">
