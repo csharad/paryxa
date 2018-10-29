@@ -17,14 +17,10 @@ const AuthenticatedUser = ({ children }) => (
         }
     `}>
         {({ loading, error, data }) => {
-            if (!loading) {
-                if (error && error.graphQLErrors[0].extensions.kind === 'UNAUTHORIZED') {
-                    return children({ loading, isLogged: false });
-                }
-                return children({ data, loading, isLogged: true });
-            } else {
-                return children({ loading, isLogged: false });
+            if (error && error.graphQLErrors[0].extensions.kind === 'UNAUTHORIZED') {
+                return children({ loading, unauthorized: true });
             }
+            return children({ data, loading });
         }}
     </Query>
 );
