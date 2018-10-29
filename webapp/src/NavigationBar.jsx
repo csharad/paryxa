@@ -20,7 +20,7 @@ class NavigationBar extends Component {
 
         return (
             <AuthenticatedUser>
-                {({ data, isLogged }) => {
+                {({ isLogged }) => {
                     return (
                         <AppBar position="sticky">
                             <Toolbar>
@@ -30,6 +30,8 @@ class NavigationBar extends Component {
 
                                 {
                                     isLogged ?
+                                        ''
+                                        :
                                         <Fragment>
                                             <Button color="inherit" component={Link} to="/login">
                                                 Login
@@ -39,7 +41,6 @@ class NavigationBar extends Component {
                                                 Sign Up
                                             </Button>
                                         </Fragment>
-                                        : ''
 
                                 }
                             </Toolbar>
