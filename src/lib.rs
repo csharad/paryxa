@@ -30,7 +30,11 @@ use gql_schema::create_schema;
 use models::user::{verify_user, User};
 use std::{env, sync::Mutex, time::Duration};
 use ttl_cache::TtlCache;
-use warp::{filters::BoxedFilter, Filter, Rejection};
+use warp::{
+    filters::BoxedFilter,
+    http::{Response, StatusCode},
+    Filter, Rejection,
+};
 
 mod basic;
 mod db_types;
@@ -84,8 +88,7 @@ impl Context {
 
 impl juniper::Context for Context {}
 
-pub fn graphiql(
-) -> impl Filter<Extract = (warp::http::Response<Vec<u8>>,), Error = Rejection> + Clone {
+pub fn graphiql() -> impl Filter<Extract = (Response<Vec<u8>>,), Error = Rejection> + Clone {
     warp::get2()
         .and(warp::index())
         .and(juniper_warp::graphiql_handler("/graphql"))
@@ -99,10 +102,12 @@ fn graphql_context() -> BoxedFilter<(Context,)> {
         .boxed()
 }
 
-pub fn graphql(
-) -> impl Filter<Extract = (warp::http::Response<Vec<u8>>,), Error = Rejection> + Clone {
+pub fn graphql() -> impl Filter<Extract = (Response<Vec<u8>>,), Error = Rejection> + Clone {
     let graphql_filter = juniper_warp::make_graphql_filter(create_schema(), graphql_context());
-    warp::path("graphql").and(graphql_filter)
+    warp::path("graphql")
+        .and(graphql_filter)
+        .recover(handle_error)
+        .unify()
 }
 
 fn pg_conn() -> impl Filter<Extract = (PooledPg,), Error = Rejection> + Clone {
@@ -146,5 +151,24 @@ fn user_lookup(
         Ok((conn, Some(found_user)))
     } else {
         Ok((conn, None))
+    }
+}
+
+const UNAUTHORIZED: &str = r#"{"data":null,"errors":[{"message":"This is an unauthorized request.","extensions":{"kind":"UNAUTHORIZED"}}]}"#;
+const SERVER_ERROR: &str = r#"{"data":null,"errors":[{"message":"Something bad happened..","extensions":{"kind":"INTERNAL_SERVER_ERROR"}}]}"#;
+
+fn graphql_like_response(body: &'static str) -> Response<Vec<u8>> {
+    Response::builder()
+        .status(StatusCode::OK)
+        .header("Content-Type", "application/json")
+        .body(body.to_string().into_bytes())
+        .unwrap()
+}
+
+fn handle_error(err: Rejection) -> Result<Response<Vec<u8>>, Rejection> {
+    match err.status() {
+        StatusCode::FORBIDDEN => Ok(graphql_like_response(UNAUTHORIZED)),
+        StatusCode::INTERNAL_SERVER_ERROR => Ok(graphql_like_response(SERVER_ERROR)),
+        _ => Err(err),
     }
 }
