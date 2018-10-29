@@ -19,6 +19,14 @@ import Settings from './Settings';
 
 const apolloClient = new ApolloClient({
     uri: '/graphql',
+    request: (operation) => {
+        const token = localStorage.getItem('paryxa-token');
+        operation.setContext({
+            headers: token ? {
+                Authorization: `Basic ${token}`
+            } : {}
+        });
+    }
 });
 
 const theme = createMuiTheme({
