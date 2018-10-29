@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { AppBar, Toolbar, Typography, Button, withStyles, IconButton, Icon } from '@material-ui/core';
+import { AppBar, Toolbar, Button, withStyles, Icon } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import AuthenticatedUser from './AuthenticatedUser';
