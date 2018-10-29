@@ -65,7 +65,7 @@ class Login extends Component {
 
                                 client.query({
                                     query: gql`
-                                        {
+                                        query Me {
                                             me {
                                                 id
                                                 firstName

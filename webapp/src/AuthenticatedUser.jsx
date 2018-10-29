@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
 // Query to get an authenticated user if possible.
 const AuthenticatedUser = ({ children }) => (
     <Query query={gql`
-        {
+        query Me {
             me {
                 id
                 firstName
