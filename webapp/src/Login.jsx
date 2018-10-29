@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { ApolloConsumer } from 'react-apollo';
-import gql from 'graphql-tag';
 import { withRouter } from 'react-router-dom';
+import { ME } from './AuthenticatedUser';
 
 const styles = theme => ({
     paper: {
@@ -63,23 +63,16 @@ class Login extends Component {
                             onSubmit={(user, action) => {
                                 localStorage.setItem('paryxa-token', btoa(`${user.email}:${user.password}`));
 
-                                client.query({
-                                    query: gql`
-                                        query Me {
-                                            me {
-                                                id
-                                                firstName
-                                                lastName
-                                                email
-                                                gender
-                                                type
-                                            }
-                                        }
-                                    `,
+                                return client.query({
+                                    query: ME,
                                     fetchPolicy: 'network-only',
                                 }).then(({ loading }) => {
                                     if (!loading) {
                                         action.setSubmitting(false);
+                                        // Due to some reason this query does not replace the `Me`
+                                        // object in state cache. For the time being, gonna use the
+                                        // following workaround.
+                                        client.reFetchObservableQueries();
                                         this.props.history.push('/profile');
                                     }
                                 }).catch((err) => {
