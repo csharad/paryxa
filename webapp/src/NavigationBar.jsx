@@ -27,9 +27,11 @@ class NavigationBar extends Component {
                     return (
                         <AppBar position="sticky">
                             <Toolbar>
-                                <Typography variant="h6" color="inherit" className={classes.grow}>
-                                    Paryksa
-                                </Typography>
+                                <div className={classes.grow}>
+                                    <Button color="inherit" component={Link} to="/">
+                                        Paryksa
+                                    </Button>
+                                </div>
                                 {
                                     data ?
                                         <Fragment>
