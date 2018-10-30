@@ -11,6 +11,7 @@ import {
 import PropTypes from 'prop-types';
 import TestList from './TestList';
 import ProfileSettingsMenu from './ProfileSettingsMenu';
+import AuthenticatedUser from './AuthenticatedUser';
 
 const styles = theme => ({
     userAvatar: {
@@ -74,21 +75,26 @@ class Profile extends Component {
                                 alignItems="center"
                                 spacing={40}
                             >
-                                <Grid item>
-                                    <Avatar className={classes.userAvatar}>U</Avatar>
-                                </Grid>
-                                <Grid item>
-                                    <Typography variant="h5">Your Name</Typography>
-
-                                    <Grid container spacing={16}>
-                                        <Grid item>
-                                            <Typography variant="subtitle1">0 Tests</Typography>
-                                        </Grid>
-                                        <Grid item>
-                                            <Typography variant="subtitle1">0 Rank</Typography>
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
+                                <AuthenticatedUser>
+                                    {({ data, loading }) => (
+                                        <Fragment>
+                                            <Grid item>
+                                                <Avatar className={classes.userAvatar}>
+                                                    {loading ?
+                                                        'U' :
+                                                        data.me.fullName ?
+                                                            data.me.fullName[0].toUpperCase() :
+                                                            'U'}
+                                                </Avatar>
+                                            </Grid>
+                                            <Grid item>
+                                                <Typography variant="h5">
+                                                    {loading ? '' : data.me.fullName || 'Anonymous User'}
+                                                </Typography>
+                                            </Grid>
+                                        </Fragment>
+                                    )}
+                                </AuthenticatedUser>
                             </Grid>
                             <Grid item >
                                 <IconButton onClick={this.showSettingsMenu}>
