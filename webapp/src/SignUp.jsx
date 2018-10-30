@@ -93,8 +93,8 @@ class SignUp extends Component {
                                         // object in state cache. For the time being, gonna use the
                                         // following workaround.
                                         await client.reFetchObservableQueries();
-                                        // And redirect to its profile.
-                                        history.push('/profile');
+                                        
+                                        history.push('/getting-started');
                                         action.setSubmitting(false);
                                     } catch (e) {
                                         if (e.graphQLErrors[0].extensions.kind === 'NOT_UNIQUE') {
