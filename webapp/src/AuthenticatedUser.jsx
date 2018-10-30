@@ -8,6 +8,7 @@ export const ME = gql`
             id
             firstName
             lastName
+            fullName
             email
             gender
             type
