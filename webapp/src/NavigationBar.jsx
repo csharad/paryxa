@@ -23,7 +23,7 @@ class NavigationBar extends Component {
 
         return (
             <AuthenticatedUser>
-                {({ data }) => {
+                {({ unauthorized }) => {
                     return (
                         <AppBar position="sticky">
                             <Toolbar>
@@ -33,7 +33,7 @@ class NavigationBar extends Component {
                                     </Button>
                                 </div>
                                 {
-                                    data ?
+                                    !unauthorized ?
                                         <Fragment>
                                             <Button
                                                 color="inherit"
