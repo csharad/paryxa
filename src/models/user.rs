@@ -100,6 +100,15 @@ graphql_object!(User: Context |&self| {
         &self.last_name
     }
 
+    field full_name() -> Option<String> {
+        match (self.first_name.as_ref(), self.last_name.as_ref()) {
+            (None, None) => None,
+            (Some(first), None) => Some(first.to_string()),
+            (None, Some(last)) => Some(last.to_string()),
+            (Some(first), Some(last)) => Some(format!("{} {}", first, last))
+        }
+    }
+
     field email() -> &str
          as "Email of a user." 
     {
