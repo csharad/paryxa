@@ -330,10 +330,8 @@ pub struct UserCredentialsUpdate {
 }
 
 impl UserCredentialsUpdate {
-    fn hashed_password(&self, uuid: Uuid, conn: &PgConnection) -> SResult<Option<String>> {
+    fn hashed_password(&self) -> SResult<Option<String>> {
         if let Some(ref new_password) = self.new_password {
-            let user = User::find_by_uuid(uuid, conn)?;
-            verify_user(user, &self.password)?;
             let new_hash = bcrypt::hash(&new_password, bcrypt::DEFAULT_COST)?;
             Ok(Some(new_hash))
         } else {
@@ -342,7 +340,11 @@ impl UserCredentialsUpdate {
     }
 
     pub fn save(self, id: Uuid, conn: &PgConnection) -> SResult<User> {
-        let password_hash = self.hashed_password(id, conn)?;
+        // Verify the password regardless of the update.
+        let user = User::find_by_uuid(id, conn)?;
+        verify_user(user, &self.password)?;
+
+        let password_hash = self.hashed_password()?;
         let user_patch = UserPatch {
             email: self.email,
             password: password_hash,
