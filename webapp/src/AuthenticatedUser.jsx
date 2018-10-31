@@ -11,6 +11,7 @@ export const ME = gql`
             fullName
             email
             gender
+            contact
             type
         }
     }
