@@ -68,18 +68,12 @@ class UserDashboard extends Component {
                 >Users
                 </Typography>
 
-                <Grid container justify="space-between" alignItems="center" className={classes.marginBottom}>
-                    <InputBase
-                        placeholder="Name / E-mail / Contact"
-                        classes={{ input: classes.searchInput }}
-                        onInput={ev => this.setQuery(ev.target.value)}
-                    ></InputBase>
-
-                    <Select classes={{ select: classes.newness }} value="all">
-                        <MenuItem value="new">New Users</MenuItem>
-                        <MenuItem value="all">All Users</MenuItem>
-                    </Select>
-                </Grid>
+                <InputBase
+                    placeholder="Name / E-mail / Contact"
+                    classes={{ input: classes.searchInput }}
+                    onInput={ev => this.setQuery(ev.target.value)}
+                    className={classes.marginBottom}
+                ></InputBase>
 
                 <Paper>
                     <Table>
