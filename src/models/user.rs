@@ -8,6 +8,7 @@ use diesel::{
     pg::Pg,
     prelude::*,
     serialize::{self, IsNull, Output, ToSql},
+    dsl,
 };
 use errors::{Error, SResult};
 use models::{test_attempt::TestAttempt, test_subscription::TestSubscription};
@@ -44,6 +45,10 @@ impl User {
             .filter(users::email.eq(email))
             .get_result(conn)?;
         Ok(user)
+    }
+
+    pub fn exists_any(conn: &PgConnection) -> SResult<bool> {
+        Ok(diesel::select(dsl::exists(users::table.select(users::id))).get_result(conn)?)
     }
 
     pub fn find_all(query: Option<String>, conn: &PgConnection) -> SResult<Vec<User>> {
@@ -269,17 +274,15 @@ pub struct UserForm {
 }
 
 impl UserForm {
-    fn hash_password(self) -> SResult<NewUser> {
+    pub fn save(self, conn: &PgConnection) -> SResult<User> {
+        let has_users = User::exists_any(conn)?;
         let password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST)?;
-        Ok(NewUser {
+        let new_user = NewUser {
             email: self.email,
             password,
+            type_: if has_users { UserType::Normal } else { UserType::Admin },
             ..NewUser::default()
-        })
-    }
-
-    pub fn save(self, conn: &PgConnection) -> SResult<User> {
-        let new_user = self.hash_password()?;
+        };
         new_user.save(conn)
     }
 }
