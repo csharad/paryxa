@@ -12,6 +12,8 @@ pub enum Error {
     IncorrectPassword,
     #[fail(display = "An unauthorized request.")]
     Unauthorized,
+    #[fail(display = "Cannot change the user type of the last admin.")]
+    LastAdmin,
 }
 
 impl From<DieselError> for Error {
@@ -82,6 +84,12 @@ impl IntoFieldError for Error {
                 "This is an unauthorized request.",
                 graphql_value!({
                     "kind": "UNAUTHORIZED"
+                }),
+            ),
+            Error::LastAdmin => FieldError::new(
+                "Cannot change the user type of the last admin",
+                graphql_value!({
+                    "kind": "LAST_ADMIN"
                 }),
             ),
         }

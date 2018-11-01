@@ -5,10 +5,10 @@ use db_types::*;
 use diesel::{
     self,
     deserialize::{self, FromSql},
+    dsl,
     pg::Pg,
     prelude::*,
     serialize::{self, IsNull, Output, ToSql},
-    dsl,
 };
 use errors::{Error, SResult};
 use models::{test_attempt::TestAttempt, test_subscription::TestSubscription};
@@ -49,6 +49,13 @@ impl User {
 
     pub fn exists_any(conn: &PgConnection) -> SResult<bool> {
         Ok(diesel::select(dsl::exists(users::table.select(users::id))).get_result(conn)?)
+    }
+
+    pub fn count_admins(conn: &PgConnection) -> SResult<i64> {
+        Ok(users::table
+            .select(dsl::count_star())
+            .filter(users::type_.eq(UserType::Admin))
+            .get_result(conn)?)
     }
 
     pub fn find_all(query: Option<String>, conn: &PgConnection) -> SResult<Vec<User>> {
@@ -190,7 +197,7 @@ impl ToSql<Gender_type, Pg> for Gender {
 }
 
 /// Type of a user.
-#[derive(Debug, FromSqlRow, AsExpression, GraphQLEnum)]
+#[derive(Debug, FromSqlRow, AsExpression, QueryId, GraphQLEnum)]
 #[sql_type = "User_type"]
 pub enum UserType {
     Admin,
@@ -282,7 +289,11 @@ impl UserForm {
         let new_user = NewUser {
             email: self.email,
             password,
-            type_: if has_users { UserType::Normal } else { UserType::Admin },
+            type_: if has_users {
+                UserType::Normal
+            } else {
+                UserType::Admin
+            },
             ..NewUser::default()
         };
         new_user.save(conn)
@@ -380,6 +391,20 @@ pub struct UserTypeUpdate {
 
 impl UserTypeUpdate {
     pub fn save(self, conn: &PgConnection) -> SResult<User> {
+        // Check if it changing the user type for that last admin.
+        // That should not happen.
+        if let Some(UserType::Normal) = self.type_ {
+            let user = User::find_by_uuid(self.id, conn)?;
+            // Yeah it being changed from an admin.
+            if let UserType::Admin = user.type_ {
+                let admin_count = User::count_admins(conn)?;
+                // This user is the last of the admins.
+                if admin_count <= 1 {
+                    Err(Error::LastAdmin)?;
+                }
+            }
+        }
+
         let user_patch = UserPatch {
             type_: self.type_,
             ..UserPatch::default()
