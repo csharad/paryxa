@@ -23,7 +23,9 @@ class NavigationBar extends Component {
 
         return (
             <AuthenticatedUser>
-                {({ unauthorized }) => {
+                {({ data, unauthorized }) => {
+                    const me = data && data.me;
+
                     return (
                         <AppBar position="sticky">
                             <Toolbar>
@@ -35,6 +37,16 @@ class NavigationBar extends Component {
                                 {
                                     !unauthorized ?
                                         <Fragment>
+                                            {
+                                                me && me.type === 'ADMIN' ?
+                                                    <Button
+                                                        color="inherit"
+                                                        component={Link}
+                                                        to="/dashboard/users"
+                                                    >Dashboard</Button> :
+                                                    ''
+                                            }
+
                                             <Button
                                                 color="inherit"
                                                 component={Link}
