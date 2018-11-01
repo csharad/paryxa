@@ -105,7 +105,9 @@ graphql_object!(User: Context |&self| {
         &self.last_name
     }
 
-    field full_name() -> Option<String> {
+    field full_name() -> Option<String> 
+        as "Full name of a user. Concatenated name for convenience."
+    {
         match (self.first_name.as_ref(), self.last_name.as_ref()) {
             (None, None) => None,
             (Some(first), None) => Some(first.to_string()),
