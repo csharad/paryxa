@@ -7,11 +7,11 @@ import {
     Button,
     MenuItem
 } from '@material-ui/core';
-import AuthenticatedUser from './AuthenticatedUser';
+import AuthenticatedUser from '../AuthenticatedUser';
 import { Formik } from 'formik';
 import PropTypes from 'prop-types';
 import * as yup from 'yup';
-import UpdateMyInfo from './UpdateMyInfo';
+import UpdateMyInfo from '../UpdateMyInfo';
 
 const styles = theme => ({
     section: {

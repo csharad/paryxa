@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import AuthenticatedUser from './AuthenticatedUser';
+import AuthenticatedUser from '../AuthenticatedUser';
 import { Formik } from 'formik';
 import {
     Typography,
@@ -13,7 +13,7 @@ import {
     DialogContentText
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import UpdateMyCredentials from './UpdateMyCredentials';
+import UpdateMyCredentials from '../UpdateMyCredentials';
 import * as yup from 'yup';
 
 const styles = theme => ({

@@ -9,13 +9,13 @@ import Login from './Login';
 import SignUp from './SignUp';
 import VerifyAccount from './VerifyAccount';
 import GettingStarted from './GettingStarted';
-import Profile from './Profile';
+import Profile from './profile/Profile';
 import SolvedQuestions from './SolvedQuestions';
-import TestPaper from './TestPaper';
-import InfoBeforeTest from './InfoBeforeTest';
-import TestComplete from './TestComplete';
-import Dashboard from './Dashboard';
-import Settings from './Settings';
+import TestPaper from './test/TestPaper';
+import InfoBeforeTest from './test/InfoBeforeTest';
+import TestComplete from './test/TestComplete';
+import Dashboard from './dashboard/Dashboard';
+import Settings from './settings/Settings';
 
 const apolloClient = new ApolloClient({
     uri: '/graphql',

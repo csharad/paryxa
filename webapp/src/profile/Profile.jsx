@@ -11,7 +11,7 @@ import {
 import PropTypes from 'prop-types';
 import TestList from './TestList';
 import ProfileSettingsMenu from './ProfileSettingsMenu';
-import AuthenticatedUser from './AuthenticatedUser';
+import AuthenticatedUser from '../AuthenticatedUser';
 
 const styles = theme => ({
     userAvatar: {
