@@ -14,7 +14,8 @@ import {
     MenuItem
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Query } from 'react-apollo';
+import gql from 'graphql-tag';
 
 const styles = theme => ({
     container: {
@@ -75,19 +76,37 @@ class UserDashboard extends Component {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Name</TableCell>
+                                <TableCell>Gender</TableCell>
                                 <TableCell>Email</TableCell>
                                 <TableCell>Contact</TableCell>
                                 <TableCell>Subscription</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {Array(5).fill(
-                                <TableRow component={Link} hover to="/dashboard/user/user-name">
-                                    <TableCell>User Name</TableCell>
-                                    <TableCell>user@email.com</TableCell>
-                                    <TableCell>1234567890</TableCell>
-                                    <TableCell>None</TableCell>
-                                </TableRow>)}
+                            <Query query={gql`
+                                query UserList($query: String) {
+                                    users(query: $query) {
+                                        id
+                                        fullName
+                                        email
+                                        gender
+                                        contact
+                                        type
+                                    }
+                                }
+                            `}>
+                                {({ data, loading }) => !loading ? (
+                                    data.users.map(user => (
+                                        <TableRow key={user.id}>
+                                            <TableCell>{user.fullName}</TableCell>
+                                            <TableCell>{user.gender}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>{user.contact}</TableCell>
+                                            <TableCell>{user.type}</TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : ''}
+                            </Query>
                         </TableBody>
                     </Table>
                 </Paper>
