@@ -21,6 +21,41 @@ class NavigationBar extends Component {
     render() {
         const { classes } = this.props;
 
+        const authNavs = (me) => (
+            <Fragment>
+                {
+                    me && me.type === 'ADMIN' ?
+                        <Button
+                            color="inherit"
+                            component={Link}
+                            to="/dashboard/users"
+                        >Dashboard</Button> :
+                        null
+                }
+
+                <Button
+                    color="inherit"
+                    component={Link}
+                    to="/profile"
+                >
+                    <Icon className={classes.profileIcon}>account_circle</Icon>
+                    Profile
+                </Button>
+            </Fragment>
+        );
+
+        const unauthNavs = (
+            <Fragment>
+                <Button color="inherit" component={Link} to="/login">
+                    Login
+                </Button>
+
+                <Button color="inherit" component={Link} to="/signup">
+                    Sign Up
+                </Button>
+            </Fragment>
+        );
+
         return (
             <AuthenticatedUser>
                 {({ data, unauthorized }) => {
@@ -34,40 +69,7 @@ class NavigationBar extends Component {
                                         Paryksa
                                     </Button>
                                 </div>
-                                {
-                                    !unauthorized ?
-                                        <Fragment>
-                                            {
-                                                me && me.type === 'ADMIN' ?
-                                                    <Button
-                                                        color="inherit"
-                                                        component={Link}
-                                                        to="/dashboard/users"
-                                                    >Dashboard</Button> :
-                                                    ''
-                                            }
-
-                                            <Button
-                                                color="inherit"
-                                                component={Link}
-                                                to="/profile"
-                                            >
-                                                <Icon className={classes.profileIcon}>account_circle</Icon>
-                                                Profile
-                                            </Button>
-                                        </Fragment>
-                                        :
-                                        <Fragment>
-                                            <Button color="inherit" component={Link} to="/login">
-                                                Login
-                                            </Button>
-
-                                            <Button color="inherit" component={Link} to="/signup">
-                                                Sign Up
-                                            </Button>
-                                        </Fragment>
-
-                                }
+                                {!unauthorized ? authNavs(me) : unauthNavs}
                             </Toolbar>
                         </AppBar>
                     );

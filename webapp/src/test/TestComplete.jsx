@@ -31,10 +31,10 @@ class TestComplete extends Component {
             >
                 <Typography variant="display1">
                     You have completed your test.
-                    </Typography>
+                </Typography>
                 <Typography>
                     You will get the results in a short while.
-                    </Typography>
+                </Typography>
 
                 <Grow in timeout={500}>
                     <Avatar className={`${classes.margin} ${classes.tick}`}>
@@ -46,8 +46,7 @@ class TestComplete extends Component {
                     className={classes.margin}
                     component={Link}
                     to="/profile"
-                >Go To Profile
-                </Button>
+                >Go To Profile</Button>
             </Grid>
         );
     }

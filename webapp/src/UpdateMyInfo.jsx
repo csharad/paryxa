@@ -18,8 +18,7 @@ const query = gql`
 const UpdateMyInfo = ({ children }) => (
     <Mutation
         mutation={query}
-    >
-        {(mutator, result) => children(mutator, result)}
+    >{(mutator, result) => children(mutator, result)}
     </Mutation>
 );
 

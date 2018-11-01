@@ -30,31 +30,31 @@ class ProfileSettingsMenu extends Component {
 
     render() {
         const { open, onClose, classes, history } = this.props;
-        
+
+        const menu = client => (
+            <List>
+                <ListItem button component={Link} to="/settings">
+                    <ListItemText className={classes.button}>Settings</ListItemText>
+                </ListItem>
+                <ListItem button onClick={() => {
+                    // Flush the token and state.
+                    localStorage.removeItem('paryxa-token');
+                    client.resetStore();
+                    // Redirect to the home page.
+                    history.push('/');
+                }}>
+                    <ListItemText className={classes.button}>Logout</ListItemText>
+                </ListItem>
+            </List>
+        );
+
         return (
             <Dialog
                 open={open}
                 onClose={onClose}
                 classes={{ root: classes.dialogRoot, paper: classes.paper }}
             >
-                <ApolloConsumer>
-                    {client => (
-                        <List>
-                            <ListItem button component={Link} to="/settings">
-                                <ListItemText className={classes.button}>Settings</ListItemText>
-                            </ListItem>
-                            <ListItem button onClick={() => {
-                                // Flush the token and state.
-                                localStorage.removeItem('paryxa-token');
-                                client.resetStore();
-                                // Redirect to the home page.
-                                history.push('/');
-                            }}>
-                                <ListItemText className={classes.button}>Logout</ListItemText>
-                            </ListItem>
-                        </List>
-                    )}
-                </ApolloConsumer>
+                <ApolloConsumer>{menu}</ApolloConsumer>
             </Dialog>
         );
     }
