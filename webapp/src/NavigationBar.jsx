@@ -27,7 +27,7 @@ class NavigationBar extends Component {
                     const me = data && data.me;
 
                     return (
-                        <AppBar position="sticky">
+                        <AppBar position="sticky" elevation={0}>
                             <Toolbar>
                                 <div className={classes.grow}>
                                     <Button color="inherit" component={Link} to="/">
