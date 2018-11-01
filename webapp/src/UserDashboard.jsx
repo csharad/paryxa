@@ -16,6 +16,7 @@ import {
 import PropTypes from 'prop-types';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
+import { debounce } from 'debounce';
 
 const styles = theme => ({
     container: {
@@ -48,13 +49,21 @@ class UserDashboard extends Component {
         classes: PropTypes.object.isRequired
     };
 
+    state = {
+        query: undefined,
+    };
+
+    setQuery = debounce(val => this.setState({ query: val }), 200);
+
     render() {
         const { classes } = this.props;
+        let { query } = this.state;
+        query = query && query.length === 0 ? undefined : query;
 
         return (
             <div className={classes.container}>
                 <Typography
-                    variant="display1"
+                    variant="h5"
                     className={classes.marginBottom}
                 >Users
                 </Typography>
@@ -63,6 +72,7 @@ class UserDashboard extends Component {
                     <InputBase
                         placeholder="Name / E-mail / Contact"
                         classes={{ input: classes.searchInput }}
+                        onInput={ev => this.setQuery(ev.target.value)}
                     ></InputBase>
 
                     <Select classes={{ select: classes.newness }} value="all">
@@ -82,32 +92,36 @@ class UserDashboard extends Component {
                                 <TableCell>Subscription</TableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>
-                            <Query query={gql`
-                                query UserList($query: String) {
-                                    users(query: $query) {
-                                        id
-                                        fullName
-                                        email
-                                        gender
-                                        contact
-                                        type
-                                    }
+                        <Query
+                            query={gql`
+                            query UserList($query: String) {
+                                users(query: $query) {
+                                    id
+                                    fullName
+                                    email
+                                    gender
+                                    contact
+                                    type
                                 }
-                            `}>
-                                {({ data, loading }) => !loading ? (
-                                    data.users.map(user => (
-                                        <TableRow key={user.id}>
-                                            <TableCell>{user.fullName}</TableCell>
-                                            <TableCell>{user.gender}</TableCell>
-                                            <TableCell>{user.email}</TableCell>
-                                            <TableCell>{user.contact}</TableCell>
-                                            <TableCell>{user.type}</TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : ''}
-                            </Query>
-                        </TableBody>
+                            }
+                        `}
+                            variables={{
+                                query,
+                            }}
+                        >{({ data, loading }) => !loading ? (
+                            <TableBody>
+                                {data.users.map(user => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>{user.fullName}</TableCell>
+                                        <TableCell>{user.gender}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>{user.contact}</TableCell>
+                                        <TableCell>{user.type}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        ) : null}
+                        </Query>
                     </Table>
                 </Paper>
             </div>
