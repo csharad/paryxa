@@ -9,9 +9,6 @@ import {
     withStyles,
     Typography,
     InputBase,
-    Select,
-    Grid,
-    MenuItem
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Query } from 'react-apollo';
@@ -26,6 +23,7 @@ const styles = theme => ({
         marginBottom: theme.spacing.unit * 2
     },
     searchInput: {
+        width: 300,
         backgroundColor: theme.palette.grey[200],
         borderRadius: theme.shape.borderRadius,
         padding: theme.spacing.unit,
@@ -69,7 +67,7 @@ class UserDashboard extends Component {
                 </Typography>
 
                 <InputBase
-                    placeholder="Name / E-mail / Contact"
+                    placeholder="Seach by name, e-mail, contact"
                     classes={{ input: classes.searchInput }}
                     onInput={ev => this.setQuery(ev.target.value)}
                     className={classes.marginBottom}
