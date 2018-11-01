@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import {
     Table,
     TableHead,
@@ -9,9 +9,12 @@ import {
     withStyles,
     Typography,
     InputBase,
+    Button,
+    TextField,
+    MenuItem,
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import { Query } from 'react-apollo';
+import { Query, Mutation } from 'react-apollo';
 import gql from 'graphql-tag';
 import { debounce } from 'debounce';
 
@@ -48,23 +51,134 @@ class UserDashboard extends Component {
     };
 
     state = {
-        query: undefined,
+        query: null,
+        editableUser: null,
+        selectedUserType: null,
     };
 
     setQuery = debounce(val => this.setState({ query: val }), 200);
 
     render() {
         const { classes } = this.props;
-        let { query } = this.state;
-        query = query && query.length === 0 ? undefined : query;
+        let { query, editableUser, selectedUserType } = this.state;
+        query = query && query.length === 0 ? null : query;
+
+        const userType = (user) => (
+            editableUser === user.id ?
+                <TextField
+                    select
+                    value={selectedUserType || user.type}
+                    onChange={(ev) => this.setState({
+                        selectedUserType: ev.target.value,
+                    })}
+                >
+                    <MenuItem value="ADMIN">Admin</MenuItem>
+                    <MenuItem value="NORMAL">Normal</MenuItem>
+                </TextField> : user.type
+        );
+
+        const actions = (user) => (
+            <Mutation
+                mutation={gql`
+                        mutation UpdateUserType($userType: UserTypeUpdate!) {
+                            updateUserType(userType: $userType) {
+                                id
+                                type
+                            }
+                        }
+                    `}
+            >{(updateType, { loading }) => (
+                editableUser === user.id ?
+                    <Fragment>
+                        <Button
+                            size="small"
+                            onClick={async () => {
+                                if (selectedUserType) {
+                                    await updateType({
+                                        variables: {
+                                            userType: {
+                                                id: editableUser,
+                                                type: selectedUserType,
+                                            }
+                                        }
+                                    });
+                                }
+                                this.setState({
+                                    editableUser: null,
+                                    selectedUserType: null,
+                                });
+                            }}
+                            disabled={loading}
+                        >Save</Button>
+                        <Button
+                            size="small"
+                            onClick={() => this.setState({
+                                editableUser: null,
+                                selectedUserType: null,
+                            })}
+                            disabled={loading}
+                        >Close</Button>
+                    </Fragment> :
+                    <Button
+                        key={2}
+                        size="small"
+                        onClick={() => this.setState({
+                            editableUser: user.id,
+                        })}
+                        disabled={loading}
+                    >Edit</Button>
+            )}</Mutation>
+        );
+
+        const tableRow = (user) => (
+            <TableRow key={user.id}>
+                <TableCell>{user.fullName}</TableCell>
+                <TableCell>{user.gender}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.contact}</TableCell>
+                <TableCell>{userType(user)}</TableCell>
+                <TableCell>{actions(user)}</TableCell>
+            </TableRow>
+        );
+
+        const table = (<Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Gender</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Contact</TableCell>
+                    <TableCell>Subscription</TableCell>
+                    <TableCell>Action</TableCell>
+                </TableRow>
+            </TableHead>
+            <Query
+                query={gql`
+                    query UserList($query: String) {
+                        users(query: $query) {
+                            id
+                            fullName
+                            email
+                            gender
+                            contact
+                            type
+                        }
+                    }
+                `}
+                variables={{
+                    query,
+                }}
+            >{({ data, loading }) => !loading ? (
+                <TableBody>{data.users.map(tableRow)}</TableBody>
+            ) : null}</Query>
+        </Table>);
 
         return (
             <div className={classes.container}>
                 <Typography
                     variant="h5"
                     className={classes.marginBottom}
-                >Users
-                </Typography>
+                >Users</Typography>
 
                 <InputBase
                     placeholder="Seach by name, e-mail, contact"
@@ -73,49 +187,7 @@ class UserDashboard extends Component {
                     className={classes.marginBottom}
                 ></InputBase>
 
-                <Paper>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Gender</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Contact</TableCell>
-                                <TableCell>Subscription</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <Query
-                            query={gql`
-                            query UserList($query: String) {
-                                users(query: $query) {
-                                    id
-                                    fullName
-                                    email
-                                    gender
-                                    contact
-                                    type
-                                }
-                            }
-                        `}
-                            variables={{
-                                query,
-                            }}
-                        >{({ data, loading }) => !loading ? (
-                            <TableBody>
-                                {data.users.map(user => (
-                                    <TableRow key={user.id}>
-                                        <TableCell>{user.fullName}</TableCell>
-                                        <TableCell>{user.gender}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.contact}</TableCell>
-                                        <TableCell>{user.type}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        ) : null}
-                        </Query>
-                    </Table>
-                </Paper>
+                <Paper>{table}</Paper>
             </div>
         );
     }
