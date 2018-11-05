@@ -8,10 +8,11 @@ import {
   Paper,
   withStyles,
   Typography,
-  InputBase,
   Button,
   TextField,
-  MenuItem
+  MenuItem,
+  Grid,
+  TablePagination
 } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { Query, Mutation } from "react-apollo";
@@ -20,20 +21,14 @@ import { debounce } from "debounce";
 
 const styles = theme => ({
   container: {
-    padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 2}px 0 ${theme
-      .spacing.unit * 3}px`
+    margin: theme.spacing.unit,
+    paddingTop: theme.spacing.unit
   },
-  marginBottom: {
-    marginBottom: theme.spacing.unit * 2
+  header: {
+    padding: theme.spacing.unit * 3
   },
   searchInput: {
-    width: 300,
-    backgroundColor: theme.palette.grey[200],
-    borderRadius: theme.shape.borderRadius,
-    padding: theme.spacing.unit,
-    "&:hover": {
-      backgroundColor: theme.palette.grey[300]
-    }
+    width: 400
   },
   newness: {
     padding: `
@@ -43,6 +38,9 @@ const styles = theme => ({
             ${theme.spacing.unit * 2}px
         `,
     backgroundColor: theme.palette.grey[200]
+  },
+  tableMessage: {
+    margin: theme.spacing.unit * 2
   }
 });
 
@@ -160,57 +158,108 @@ class UserDashboard extends Component {
       </TableRow>
     );
 
+    const wrapBody = (body, { page, perPage, count }, ifEmpty) => (
+      <Fragment>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Gender</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Contact</TableCell>
+              <TableCell>Subscription</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          {body}
+        </Table>
+        {ifEmpty}
+        <TablePagination
+          component="div"
+          count={count}
+          rowsPerPage={perPage}
+          page={page}
+          rowsPerPageOptions={[10]}
+          onChangePage={() => {}}
+          onChangeRowsPerPage={() => {}}
+        />
+      </Fragment>
+    );
+
     const table = (
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Gender</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Contact</TableCell>
-            <TableCell>Subscription</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <Query
-          query={gql`
-            query UserList($query: String) {
-              users(query: $query) {
-                id
-                fullName
-                email
-                gender
-                contact
-                type
-              }
+      <Query
+        query={gql`
+          query UserList($query: String) {
+            users(query: $query) {
+              id
+              fullName
+              email
+              gender
+              contact
+              type
             }
-          `}
-          variables={{
-            query
-          }}
-        >
-          {({ data, loading }) =>
-            !loading ? <TableBody>{data.users.map(tableRow)}</TableBody> : null
           }
-        </Query>
-      </Table>
+        `}
+        variables={{
+          query
+        }}
+      >
+        {({ data, loading }) =>
+          !loading
+            ? wrapBody(
+                <TableBody>{data.users.map(tableRow)}</TableBody>,
+                {
+                  page: 0,
+                  perPage: 10,
+                  count: data.users.length
+                },
+                data.users.length === 0 ? (
+                  <Typography
+                    variant="subtitle2"
+                    color="textSecondary"
+                    align="center"
+                    className={classes.tableMessage}
+                  >
+                    There are no records in the table.
+                  </Typography>
+                ) : null
+              )
+            : wrapBody(
+                null,
+                {
+                  page: 0,
+                  perPage: 10,
+                  count: 0
+                },
+                <Typography
+                  variant="subtitle2"
+                  color="textSecondary"
+                  align="center"
+                  className={classes.tableMessage}
+                >
+                  Searching...
+                </Typography>
+              )
+        }
+      </Query>
     );
 
     return (
-      <div className={classes.container}>
-        <Typography variant="h5" className={classes.marginBottom}>
-          Users
-        </Typography>
-
-        <InputBase
-          placeholder="Seach by name, e-mail, contact"
-          classes={{ input: classes.searchInput }}
-          onInput={ev => this.setQuery(ev.target.value)}
-          className={classes.marginBottom}
-        />
-
-        <Paper>{table}</Paper>
-      </div>
+      <Paper className={classes.container}>
+        <Grid container justify="space-between" className={classes.header}>
+          <Grid item>
+            <Typography variant="h5">Users</Typography>
+          </Grid>
+          <Grid item>
+            <TextField
+              placeholder="Seach"
+              className={classes.searchInput}
+              onInput={ev => this.setQuery(ev.target.value)}
+            />
+          </Grid>
+        </Grid>
+        {table}
+      </Paper>
     );
   }
 }
