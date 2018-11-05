@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import {
   Table,
   TableHead,
@@ -7,7 +7,8 @@ import {
   TableCell,
   Paper,
   withStyles,
-  Typography
+  Typography,
+  TablePagination
 } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { Query } from "react-apollo";
@@ -15,11 +16,14 @@ import gql from "graphql-tag";
 
 const styles = theme => ({
   container: {
-    padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 2}px 0 ${theme
-      .spacing.unit * 3}px`
+    margin: theme.spacing.unit,
+    paddingTop: theme.spacing.unit
   },
   title: {
-    marginBottom: theme.spacing.unit * 2
+    padding: theme.spacing.unit * 3
+  },
+  tableMessage: {
+    margin: theme.spacing.unit * 2
   }
 });
 
@@ -39,43 +43,88 @@ class TestsDashboard extends Component {
       </TableRow>
     );
 
+    const withHeader = (body, { page, perPage, count }, ifEmpty) => (
+      <Fragment>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          {body}
+        </Table>
+        {ifEmpty}
+        <TablePagination
+          component="div"
+          count={count}
+          rowsPerPage={perPage}
+          page={page}
+          rowsPerPageOptions={[10]}
+          onChangePage={() => {}}
+          onChangeRowsPerPage={() => {}}
+        />
+      </Fragment>
+    );
+
     const table = (
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <Query
-            query={gql`
-              query TestPaperList {
-                testPapers {
-                  id
-                  name
-                  type
-                }
-              }
-            `}
-          >
-            {({ data, loading }) =>
-              !loading ? data.testPapers.map(tableRow) : null
+      <Query
+        query={gql`
+          query TestPaperList {
+            testPapers {
+              id
+              name
+              type
             }
-          </Query>
-        </TableBody>
-      </Table>
+          }
+        `}
+      >
+        {({ data, loading }) =>
+          !loading
+            ? withHeader(
+                <TableBody>{data.testPapers.map(tableRow)}</TableBody>,
+                {
+                  page: 0,
+                  perPage: 10,
+                  count: data.testPapers.length
+                },
+                <Typography
+                  variant="subtitle2"
+                  color="textSecondary"
+                  align="center"
+                  className={classes.tableMessage}
+                >
+                  There are no records in the table.
+                </Typography>
+              )
+            : withHeader(
+                null,
+                {
+                  page: 0,
+                  perPage: 10,
+                  count: 0
+                },
+                <Typography
+                  variant="subtitle2"
+                  color="textSecondary"
+                  align="center"
+                  className={classes.tableMessage}
+                >
+                  Searching...
+                </Typography>
+              )
+        }
+      </Query>
     );
 
     return (
-      <div className={classes.container}>
+      <Paper className={classes.container}>
         <Typography variant="h5" className={classes.title}>
           Tests
         </Typography>
-
-        <Paper>{table}</Paper>
-      </div>
+        {table}
+      </Paper>
     );
   }
 }
