@@ -1,4 +1,4 @@
-use diesel::{self, prelude::*};
+use diesel::{self, prelude::*, dsl};
 use errors::SResult;
 use models::question_option::{QuestionOption, QuestionOptionForm, QuestionOptionsUpdate};
 use schema::test_questions;
@@ -35,6 +35,14 @@ impl TestQuestion {
                     .eq(test_paper_id)
                     .and(test_questions::uuid.eq(uuid)),
             ).get_result(conn)?)
+    }
+
+    pub fn count_questions_for_paper(test_paper_id: i32, conn: &PgConnection) -> SResult<i32> {
+        let count: i64 = test_questions::table
+            .filter(test_questions::test_paper_id.eq(test_paper_id))
+            .select(dsl::count_star())
+            .get_result(conn)?;
+        Ok(count as i32)
     }
 
     fn delete_multiple(vec: Vec<Uuid>, test_paper_id: i32, conn: &PgConnection) -> SResult<()> {

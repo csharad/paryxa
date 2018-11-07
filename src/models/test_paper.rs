@@ -75,6 +75,10 @@ graphql_object!(TestPaper: Context |&self| {
         &self.type_
     }
 
+    field total_questions(&executor) -> SResult<i32> {
+        TestQuestion::count_questions_for_paper(self.id, &executor.context().conn)
+    }
+
     field questions(&executor) -> SResult<Vec<TestQuestion>> 
         as "Questions of a test paper."
     {
