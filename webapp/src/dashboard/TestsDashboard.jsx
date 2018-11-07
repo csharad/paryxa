@@ -89,14 +89,16 @@ class TestsDashboard extends Component {
                   perPage: 10,
                   count: data.testPapers.length
                 },
-                <Typography
-                  variant="subtitle2"
-                  color="textSecondary"
-                  align="center"
-                  className={classes.tableMessage}
-                >
-                  There are no records in the table.
-                </Typography>
+                data.testPapers.length === 0 ? (
+                  <Typography
+                    variant="subtitle2"
+                    color="textSecondary"
+                    align="center"
+                    className={classes.tableMessage}
+                  >
+                    There are no records in the table.
+                  </Typography>
+                ) : null
               )
             : withHeader(
                 null,
