@@ -8,7 +8,8 @@ import {
   Paper,
   withStyles,
   Typography,
-  TablePagination
+  TablePagination,
+  Button
 } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { Query } from "react-apollo";
@@ -38,8 +39,15 @@ class TestsDashboard extends Component {
     const tableRow = paper => (
       <TableRow key={paper.id}>
         <TableCell>{paper.name}</TableCell>
-        <TableCell>{paper.type}</TableCell>
-        <TableCell>Actions</TableCell>
+        <TableCell>{paper.totalQuestions}</TableCell>
+        <TableCell>
+          {paper.type === "SCHEDULED" ? "Scheduled" : "Free Form"}
+        </TableCell>
+        <TableCell>
+          {paper.type === "SCHEDULED" ? (
+            <Button size="small">Schedule</Button>
+          ) : null}
+        </TableCell>
       </TableRow>
     );
 
@@ -49,6 +57,7 @@ class TestsDashboard extends Component {
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
+              <TableCell>Questions</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -76,6 +85,7 @@ class TestsDashboard extends Component {
               id
               name
               type
+              totalQuestions
             }
           }
         `}
